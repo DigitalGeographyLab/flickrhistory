@@ -1,0 +1,3 @@
+[build-system]
+requires = ["dunamai", "setuptools", "wheel"]
+build-backend = "setuptools.build_meta"

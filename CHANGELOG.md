@@ -1,1 +1,1 @@
-- **0.0.1** (2020-11-??): First functional release
+- **0.0.1** (2020-11-06): First functional release
