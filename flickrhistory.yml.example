@@ -1,0 +1,10 @@
+database_connection_string: "postgresql://USER@HOST/DATABASE"
+flickr_api_keys:
+    - PUT
+    - AS
+    - MANY
+    - API KEYS
+    - HERE
+    - AS
+    - YOU
+    - HAVE
