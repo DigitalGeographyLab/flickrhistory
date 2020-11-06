@@ -25,9 +25,4 @@ __all__ = [
 ]
 
 
-import dunamai as _dunamai
-
-__version__ = _dunamai.get_version(
-    "flickrhistory",
-    third_choice=_dunamai.Version.from_any_vcs
-).serialize(dirty=True)
+__version__ = "0.0.2"
