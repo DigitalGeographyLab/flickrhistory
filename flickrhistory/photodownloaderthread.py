@@ -25,6 +25,7 @@ __all__ = ["PhotoDownloaderThread"]
 
 import queue
 import threading
+import time
 
 import sqlalchemy
 
@@ -85,11 +86,23 @@ class PhotoDownloaderThread(threading.Thread):
                 for photo in photo_downloader.photos:
                     with sqlalchemy.orm.Session(
                         self._engine
-                    ) as session, session.begin():
-                        flickr_photo = FlickrPhoto.from_raw_api_data_flickrphotossearch(
-                            photo
-                        )
-                        session.merge(flickr_photo)
+                    ) as session:
+                        try:
+                            with session.begin():
+                                flickr_photo = FlickrPhoto.from_raw_api_data_flickrphotossearch(
+                                    photo
+                                )
+                                session.merge(flickr_photo)
+                        except sqlalchemy.exc.IntegrityError:
+                            # remedy race conditions
+                            # TODO: find out how to avoid them
+                            time.sleep(1.0)
+                            with session.begin():
+                                session.flush()
+                                flickr_photo = FlickrPhoto.from_raw_api_data_flickrphotossearch(
+                                    photo
+                                )
+                                session.merge(flickr_photo)
 
                     self.count += 1
 
