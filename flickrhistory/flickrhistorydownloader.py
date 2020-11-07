@@ -20,7 +20,7 @@
 """Download (all) georeferenced flickr posts."""
 
 
-__all__ = ["FlickrHistory"]
+__all__ = ["FlickrHistoryDownloader"]
 
 
 import collections
@@ -42,7 +42,7 @@ from .timespan import TimeSpan
 from .userprofileupdaterthread import UserProfileUpdaterThread
 
 
-class FlickrHistory:
+class FlickrHistoryDownloader:
     """Download (all) georeferenced flickr posts."""
 
     NUM_WORKERS = multiprocessing.cpu_count() + 1  # 1 == user_profile_updater

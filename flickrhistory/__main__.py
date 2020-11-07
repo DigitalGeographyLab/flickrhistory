@@ -20,12 +20,12 @@
 """Download a complete history of georeferenced flickr posts."""
 
 
-from .flickrhistory import FlickrHistory
+from .flickrhistorydownloader import FlickrHistoryDownloader
 
 
 def main():
     """Download a complete history of georeferenced flickr posts."""
-    FlickrHistory().download()
+    FlickrHistoryDownloader().download()
 
 
 if __name__ == "__main__":
