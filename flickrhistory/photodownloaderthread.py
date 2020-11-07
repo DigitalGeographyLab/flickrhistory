@@ -23,7 +23,6 @@
 __all__ = ["PhotoDownloaderThread"]
 
 
-import queue
 import threading
 import time
 
@@ -43,7 +42,7 @@ class PhotoDownloaderThread(threading.Thread):
     def __init__(
             self,
             api_key_manager,
-            todo_queue,
+            todo_deque,
             done_queue
     ):
         """
@@ -51,7 +50,7 @@ class PhotoDownloaderThread(threading.Thread):
 
         Args:
             api_key_manager: instance of an ApiKeyManager
-            todo_queue: queue.Queue that serves TimeSpans
+            todo_deque: collections.deque that serves TimeSpans
                         that need to be downloaded
             done_queue: queue.Queue into which to put TimeSpans
                         that have been downloaded
@@ -62,7 +61,7 @@ class PhotoDownloaderThread(threading.Thread):
         self.count = 0
 
         self._api_key_manager = api_key_manager
-        self._todo_queue = todo_queue
+        self._todo_deque = todo_deque
         self._done_queue = done_queue
 
         self.shutdown = threading.Event()
@@ -73,11 +72,11 @@ class PhotoDownloaderThread(threading.Thread):
             )
 
     def run(self):
-        """Get TimeSpans off todo_queue and download photos."""
+        """Get TimeSpans off todo_deque and download photos."""
         while not self.shutdown.is_set():
             try:
-                timespan = self._todo_queue.get(block=False)
-            except queue.Empty:
+                timespan = self._todo_deque.pop()
+            except IndexError:
                 break
 
             photo_downloader = PhotoDownloader(timespan, self._api_key_manager)
@@ -115,11 +114,11 @@ class PhotoDownloaderThread(threading.Thread):
             except DownloadBatchIsTooLargeError:
                 # too many photos in this time span,
                 # let’s split it in half and re-inject
-                # it to the todo queue
+                # it to the todo deque
                 for half_timespan in timespan / 2:
-                    self._todo_queue.put(half_timespan)
+                    self._todo_deque.append(half_timespan)
 
-                # get a new timespan from the queue :)
+                # get a new timespan from the deque :)
                 continue
 
             # … report to parent thread how much we worked
