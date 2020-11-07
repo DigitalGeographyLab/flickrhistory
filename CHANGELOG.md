@@ -1,3 +1,6 @@
+- **0.0.6** (2020-11-07):
+    - fancy console output 💍
+
 - **0.0.5** (2020-11-07):
     - fixed issue #2 (improvement): use deque instead of queue for todo list
 
