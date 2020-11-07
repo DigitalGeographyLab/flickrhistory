@@ -33,6 +33,7 @@ class FlickrHistoryDownloader:
     """Download (all) georeferenced flickr posts."""
 
     def __new__(cls, *args, **kwargs):
+        """Create a new FlickrHistoryDownloader depending on the terminal’s capabilities."""
         if blessed.Terminal().does_styling:
             cls = FancyFlickrHistoryDownloader
         else:
