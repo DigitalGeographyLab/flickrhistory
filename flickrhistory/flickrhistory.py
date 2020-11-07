@@ -25,6 +25,7 @@ __all__ = ["FlickrHistory"]
 
 import datetime
 import queue
+import math
 import multiprocessing
 import sys
 import threading
@@ -136,30 +137,19 @@ class FlickrHistory:
     def gaps_in_download_history(self):
         """Find gaps in download history."""
         already_downloaded = self.already_downloaded_timespans
-
-        # if we have less gaps than threads,
-        # some workers receive queue.Empty
-        # and will not work anything
-        #
-        # "multiply" the number of timespans
-        # by splitting each into NUM_WORKERS parts
-        if len(already_downloaded) > self.NUM_WORKERS:
-            split_gaps = False
-        else:
-            split_gaps = True
+        one_day = datetime.timedelta(days=1)  # for comparison
 
         for i in range(len(already_downloaded) - 1):
             gap = TimeSpan(
                 already_downloaded[i].end,
                 already_downloaded[i + 1].start
             )
-            if split_gaps:
-                for part_of_gap in gap / self.NUM_WORKERS:
+            if gap.duration > one_day:
+                divider = math.ceil(gap.duration / one_day)
+                for part_of_gap in gap / divider:
                     yield part_of_gap
             else:
                 yield gap
-
-        # if less gaps than threads, we loose all of the idle ones!
 
     @property
     def already_downloaded_timespans(self):
