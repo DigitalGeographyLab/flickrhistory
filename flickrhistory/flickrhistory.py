@@ -76,63 +76,79 @@ class FlickrHistory:
                 self._worker_threads.append(worker)
 
             # start user profile updater
-            user_profile_updater_thread = UserProfileUpdaterThread(
+            self.user_profile_updater_thread = UserProfileUpdaterThread(
                 self._api_key_manager
             )
-            user_profile_updater_thread.start()
+            self.user_profile_updater_thread.start()
 
             # start cache updater
-            cache_updater_thread = CacheUpdaterThread(self._done_queue)
-            cache_updater_thread.start()
+            self.cache_updater_thread = CacheUpdaterThread(self._done_queue)
+            self.cache_updater_thread.start()
 
             while threading.active_count() > self.NUM_MANAGERS:
-                print(
-                    (
-                        "Downloaded metadata for {photos: 6d} photos "
-                        + "and {profiles: 4d} user profiles "
-                        + "using {workers:d} workers, "
-                        + "{todo:d} time slots to cover"
-                    ).format(
-                        photos=sum([worker.count for worker in self._worker_threads]),
-                        profiles=user_profile_updater_thread.count,
-                        workers=(threading.active_count() - self.NUM_MANAGERS),
-                        todo=len(self._todo_deque)
-                    ),
-                    file=sys.stderr,
-                    end="\r"
-                )
+                self.report_progress()
                 time.sleep(0.1)
 
         except (
             KeyboardInterrupt,
             SigTermReceivedException
         ):
-            print(
-                "Cleaning up" + (" " * 69),  # 80 - len("Cleaning up")
-                file=sys.stderr,
-                end="\r"
-            )
+            self.announce_shutdown()
             for worker in self._worker_threads:
                 worker.shutdown.set()
-            user_profile_updater_thread.shutdown.set()
+            self.user_profile_updater_thread.shutdown.set()
 
         finally:
-            print(
-                (
-                    "Downloaded {photos:d} photos "
-                    + "and {profiles:d} user profiles"
-                ).format(
-                    photos=sum([worker.count for worker in self._worker_threads]),
-                    profiles=user_profile_updater_thread.count
-                ),
-                file=sys.stderr
-            )
+            self.summarise_overall_progress()
             for worker in self._worker_threads:
                 worker.join()
-            user_profile_updater_thread.shutdown.set()
-            user_profile_updater_thread.join()
-            cache_updater_thread.shutdown.set()
-            cache_updater_thread.join()
+            self.user_profile_updater_thread.shutdown.set()
+            self.user_profile_updater_thread.join()
+            self.cache_updater_thread.shutdown.set()
+            self.cache_updater_thread.join()
+
+    def report_progress(self):
+        """Report current progress."""
+        print(
+            (
+                "Downloaded metadata for {photos: 6d} photos "
+                + "and {profiles: 4d} user profiles "
+                + "using {workers:d} workers, "
+                + "{todo:d} time slots to cover"
+            ).format(
+                photos=sum([worker.count for worker in self._worker_threads]),
+                profiles=self.user_profile_updater_thread.count,
+                workers=(threading.active_count() - self.NUM_MANAGERS),
+                todo=len(self._todo_deque)
+            ),
+            file=sys.stderr,
+            end="\r"
+        )
+
+    def announce_shutdown(self):
+        """Tell the user that we initiated shutdown."""
+        print(
+            "Cleaning up" + (" " * 69),  # 80 - len("Cleaning up")
+            file=sys.stderr,
+            end="\r"
+        )
+
+    def summarise_overall_progress(self):
+        """
+        Summarise what we have done.
+
+        (Called right before exit)
+        """
+        print(
+            (
+                "Downloaded {photos:d} photos "
+                + "and {profiles:d} user profiles"
+            ).format(
+                photos=sum([worker.count for worker in self._worker_threads]),
+                profiles=self.user_profile_updater_thread.count
+            ),
+            file=sys.stderr
+        )
 
     @property
     def gaps_in_download_history(self):
