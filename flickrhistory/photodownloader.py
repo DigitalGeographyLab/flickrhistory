@@ -93,6 +93,17 @@ class PhotoDownloader:
                 )
 
             for photo in results["photos"]["photo"]:
+
+                # the flickr API is matching date_posted very fuzzily,
+                # let’s not waste time with duplicates
+                if (
+                        datetime.datetime.fromtimestamp(
+                            int(photo["dateupload"]),
+                            tz=datetime.timezone.utc
+                        ) > self._timespan.end
+                ):
+                    break
+
                 yield photo
 
             page += 1
