@@ -7,3 +7,6 @@
 - **0.0.3** (2020-11-07):
     - Work around race conditions due to poor SQLAlchemy BEGIN/COMMIT/UPSERT handling
     - Discard photos outside download time window early
+
+- **0.0.4** (2020-11-07):
+        - fixed issue #1: flickr API returning 0 instead of “too many”
