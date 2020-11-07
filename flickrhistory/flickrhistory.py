@@ -23,6 +23,7 @@
 __all__ = ["FlickrHistory"]
 
 
+import collections
 import datetime
 import queue
 import math
@@ -50,7 +51,7 @@ class FlickrHistory:
 
     def __init__(self):
         """Intialise a FlickrHistory object."""
-        self._todo_queue = queue.Queue()
+        self._todo_deque = collections.deque()
         self._done_queue = queue.Queue()
 
         self._worker_threads = []
@@ -61,14 +62,14 @@ class FlickrHistory:
     def download(self):
         """Download all georeferenced flickr posts."""
         for gap in self.gaps_in_download_history:
-            self._todo_queue.put(gap)
+            self._todo_deque.append(gap)
 
         try:
             # start downloaders
             for _ in range(self.NUM_WORKERS - 1):
                 worker = PhotoDownloaderThread(
                     self._api_key_manager,
-                    self._todo_queue,
+                    self._todo_deque,
                     self._done_queue
                 )
                 worker.start()
@@ -95,7 +96,7 @@ class FlickrHistory:
                         photos=sum([worker.count for worker in self._worker_threads]),
                         profiles=user_profile_updater_thread.count,
                         workers=(threading.active_count() - self.NUM_MANAGERS),
-                        todo=self._todo_queue.qsize()
+                        todo=len(self._todo_deque)
                     ),
                     file=sys.stderr,
                     end="\r"
