@@ -88,8 +88,10 @@ class PhotoDownloaderThread(threading.Thread):
                     ) as session:
                         try:
                             with session.begin():
-                                flickr_photo = FlickrPhoto.from_raw_api_data_flickrphotossearch(
-                                    photo
+                                flickr_photo = (
+                                    FlickrPhoto.from_raw_api_data_flickrphotossearch(
+                                        photo
+                                    )
                                 )
                                 session.merge(flickr_photo)
                         except sqlalchemy.exc.IntegrityError:
@@ -98,8 +100,10 @@ class PhotoDownloaderThread(threading.Thread):
                             time.sleep(1.0)
                             with session.begin():
                                 session.flush()
-                                flickr_photo = FlickrPhoto.from_raw_api_data_flickrphotossearch(
-                                    photo
+                                flickr_photo = (
+                                    FlickrPhoto.from_raw_api_data_flickrphotossearch(
+                                        photo
+                                    )
                                 )
                                 session.merge(flickr_photo)
 
