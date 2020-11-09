@@ -35,10 +35,10 @@ class FlickrHistoryDownloader:
     def __new__(cls, *args, **kwargs):
         """Create a new FlickrHistoryDownloader (dep. on terminal’s capabilities)."""
         if blessed.Terminal().does_styling:
-            cls = FancyFlickrHistoryDownloader
+            _cls = FancyFlickrHistoryDownloader
         else:
-            cls = BasicFlickrHistoryDownloader
+            _cls = BasicFlickrHistoryDownloader
 
-        instance = cls.__new__(cls, *args, **kwargs)
+        instance = _cls.__new__(_cls, *args, **kwargs)
         instance.__init__(*args, **kwargs)
         return instance

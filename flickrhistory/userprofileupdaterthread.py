@@ -38,13 +38,15 @@ class UserProfileUpdaterThread(threading.Thread):
 
     def __init__(
             self,
-            api_key_manager
+            api_key_manager,
+            partition=None
     ):
         """
         Intialize a UserProfileUpdateThread.
 
         Args:
             api_key_manager: instance of an ApiKeyManager
+            partition (tuple of int): download the n-th of m parts of incomplete users
 
         """
         super().__init__()
@@ -52,6 +54,19 @@ class UserProfileUpdaterThread(threading.Thread):
         self.count = 0
 
         self._api_key_manager = api_key_manager
+        try:
+            part, number_of_partitions = partition
+            assert part > 0
+            assert part <= number_of_partitions
+            self._bounds = (
+                (part - 1) * 1.0 / number_of_partitions,
+                part * 1.0 / number_of_partitions
+            )
+        except (
+            AssertionError,
+            TypeError
+        ):
+            self._bounds = None
 
         self.shutdown = threading.Event()
 
@@ -60,24 +75,50 @@ class UserProfileUpdaterThread(threading.Thread):
                 config["database_connection_string"]
             )
 
+    @property
+    def nsids_of_users_without_detailed_information(self):
+        """Find nsid of incomplete user profiles."""
+        # Find nsid of incomplete user profiles
+        # We use first_name IS NULL, because after
+        # updating a profile it will be "", so NULL is
+        # a good way of finding “new” profiles
+        with sqlalchemy.orm.Session(self._engine) as session:
+            if self._bounds is None:
+                nsids_of_users_without_detailed_information = (
+                    session.query(FlickrUser.nsid).filter_by(first_name=None)
+                )
+            else:
+                bounds = (
+                    sqlalchemy.select(
+                        sqlalchemy.sql.functions.percentile_disc(self._bounds[0])
+                        .within_group(FlickrUser.id)
+                        .label("lower"),
+                        sqlalchemy.sql.functions.percentile_disc(self._bounds[1])
+                        .within_group(FlickrUser.id)
+                        .label("upper")
+                    )
+                    .select_from(FlickrUser)
+                    .filter_by(first_name=None)
+                    .cte()
+                )
+                nsids_of_users_without_detailed_information = (
+                    session.query(FlickrUser.nsid)
+                    .filter_by(first_name=None)
+                    .where(FlickrUser.id.between(bounds.c.lower, bounds.c.upper))
+                )
+
+        for nsid, in nsids_of_users_without_detailed_information:
+            yield nsid
+
     def run(self):
         """Get TimeSpans off todo_queue and download photos."""
         user_profile_downloader = UserProfileDownloader(self._api_key_manager)
 
         while not self.shutdown.is_set():
-
-            # Find nsid of incomplete user profiles
-            # We use first_name IS NULL, because after
-            # updating a profile it will be "", so NULL is
-            # a good way of finding “new” profiles
-            with sqlalchemy.orm.Session(self._engine) as session:
-                nsids_of_users_without_detailed_information = session.execute(
-                    sqlalchemy.select(FlickrUser.nsid)
-                    .filter_by(first_name=None)
-                ).scalars()
-
-            for nsid in nsids_of_users_without_detailed_information:
-                with session.begin():
+            for nsid in self.nsids_of_users_without_detailed_information:
+                with sqlalchemy.orm.Session(
+                        self._engine
+                ) as session, session.begin():
                     flickr_user = (
                         FlickrUser.from_raw_api_data_flickrprofilegetprofile(
                             user_profile_downloader.get_profile_for_nsid(nsid)

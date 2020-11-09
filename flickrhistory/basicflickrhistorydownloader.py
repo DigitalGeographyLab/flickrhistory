@@ -51,10 +51,13 @@ class BasicFlickrHistoryDownloader:
 
     def __init__(self):
         """Intialise a FlickrHistory object."""
+        self.started = datetime.datetime.now()
+
         self._todo_deque = collections.deque()
         self._done_queue = queue.Queue()
 
         self._worker_threads = []
+        self._cache_updater_thread = CacheUpdaterThread(self._done_queue)
 
         with Config() as config:
             self._api_key_manager = ApiKeyManager(config["flickr_api_keys"])
@@ -66,7 +69,7 @@ class BasicFlickrHistoryDownloader:
 
         try:
             # start downloaders
-            for _ in range(self.NUM_WORKERS - 1):
+            for _ in range(self.NUM_WORKERS):
                 worker = PhotoDownloaderThread(
                     self._api_key_manager,
                     self._todo_deque,
@@ -75,15 +78,18 @@ class BasicFlickrHistoryDownloader:
                 worker.start()
                 self._worker_threads.append(worker)
 
-            # start user profile updater
-            self.user_profile_updater_thread = UserProfileUpdaterThread(
-                self._api_key_manager
-            )
-            self.user_profile_updater_thread.start()
+            # start user profile updaters
+            for i in range(self.NUM_WORKERS):
+                worker = UserProfileUpdaterThread(
+                    self._api_key_manager,
+                    (i + 1, self.NUM_WORKERS)
+                )
+                worker.start()
+                self._worker_threads.append(worker)
 
             # start cache updater
-            self.cache_updater_thread = CacheUpdaterThread(self._done_queue)
-            self.cache_updater_thread.start()
+            self._cache_updater_thread = CacheUpdaterThread(self._done_queue)
+            self._cache_updater_thread.start()
 
             while threading.active_count() > self.NUM_MANAGERS:
                 self.report_progress()
@@ -96,19 +102,17 @@ class BasicFlickrHistoryDownloader:
             self.announce_shutdown()
             for worker in self._worker_threads:
                 worker.shutdown.set()
-            self.user_profile_updater_thread.shutdown.set()
 
         finally:
             self.summarise_overall_progress()
             for worker in self._worker_threads:
                 worker.join()
-            self.user_profile_updater_thread.shutdown.set()
-            self.user_profile_updater_thread.join()
-            self.cache_updater_thread.shutdown.set()
-            self.cache_updater_thread.join()
+            self._cache_updater_thread.shutdown.set()
+            self._cache_updater_thread.join()
 
     def report_progress(self):
         """Report current progress."""
+        photo_count, _, profile_count, _ = self._statistics
         print(
             (
                 "Downloaded metadata for {photos: 6d} photos "
@@ -116,8 +120,8 @@ class BasicFlickrHistoryDownloader:
                 + "using {workers:d} workers, "
                 + "{todo:d} time slots to cover"
             ).format(
-                photos=sum([worker.count for worker in self._worker_threads]),
-                profiles=self.user_profile_updater_thread.count,
+                photos=photo_count,
+                profiles=profile_count,
                 workers=(threading.active_count() - self.NUM_MANAGERS),
                 todo=len(self._todo_deque)
             ),
@@ -139,13 +143,14 @@ class BasicFlickrHistoryDownloader:
 
         (Called right before exit)
         """
+        photo_count, _, profile_count, _ = self._statistics
         print(
             (
                 "Downloaded {photos:d} photos "
                 + "and {profiles:d} user profiles"
             ).format(
-                photos=sum([worker.count for worker in self._worker_threads]),
-                profiles=self.user_profile_updater_thread.count
+                photos=photo_count,
+                profiles=profile_count
             ),
             file=sys.stderr
         )
@@ -205,3 +210,23 @@ class BasicFlickrHistoryDownloader:
         ]
 
         return sum(timespans)  # sum resolves overlaps
+
+    @property
+    def _statistics(self):
+        runtime = float((datetime.datetime.now() - self.started).total_seconds())
+
+        photo_count = sum([
+            worker.count
+            for worker in self._worker_threads
+            if isinstance(worker, PhotoDownloaderThread)
+        ])
+        photo_rate = photo_count / runtime
+
+        profile_count = sum([
+            worker.count
+            for worker in self._worker_threads
+            if isinstance(worker, UserProfileUpdaterThread)
+        ])
+        profile_rate = profile_count / runtime
+
+        return (photo_count, photo_rate, profile_count, profile_rate)
