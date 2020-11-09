@@ -49,7 +49,7 @@ class FancyFlickrHistoryDownloader(BasicFlickrHistoryDownloader):
         + version
         + "{t.bold} ###"
 
-        + "{t.norma}"
+        + "{t.normal}"
     )
 
     STATUS = (
