@@ -1,5 +1,6 @@
 - **0.0.8** (2020-11-09):
     - improvement: multi-threaded user profile download (re issue #8)
+    - removed dunamai, run it as a git pre-commit hook, rather
 
 - **0.0.7** (2020-11-09):
     - fixed issue #6: working around bogus API responses,

@@ -32,7 +32,7 @@ import threading
 import blessed
 
 from .basicflickrhistorydownloader import BasicFlickrHistoryDownloader
-from .__version__ import __version__ as version
+from . import __version__ as version
 
 
 class FancyFlickrHistoryDownloader(BasicFlickrHistoryDownloader):
