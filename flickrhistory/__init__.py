@@ -25,9 +25,9 @@ __all__ = [
     "__version__",
 ]
 
-from .__version__ import __version__
-
 try:
     from .flickrhistorydownloader import FlickrHistoryDownloader
 except ImportError:
     FlickrHistoryDownloader = None
+
+__version__ = "0.0.7.post8.dev0+7c52368"
