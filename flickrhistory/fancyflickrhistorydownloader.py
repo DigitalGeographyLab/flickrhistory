@@ -138,15 +138,12 @@ class FancyFlickrHistoryDownloader(BasicFlickrHistoryDownloader):
 
     @property
     def _statistics(self):
-        started = datetime.datetime.now()
+        runtime = float((datetime.datetime.now() - self.started).total_seconds())
 
-        while True:
-            runtime = float((datetime.datetime.now() - started).total_seconds())
+        photo_count = sum([worker.count for worker in self._worker_threads])
+        photo_rate = photo_count / runtime
 
-            photo_count = sum([worker.count for worker in self._worker_threads])
-            photo_rate = photo_count / runtime
+        profile_count = self.user_profile_updater_thread.count
+        profile_rate = profile_count / runtime
 
-            profile_count = self.user_profile_updater_thread.count
-            profile_rate = profile_count / runtime
-
-            yield (photo_count, photo_rate, profile_count, profile_rate)
+        return (photo_count, photo_rate, profile_count, profile_rate)
