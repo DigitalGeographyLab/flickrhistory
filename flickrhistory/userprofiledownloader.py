@@ -23,6 +23,8 @@
 __all__ = ["UserProfileDownloader"]
 
 
+import json
+
 import requests
 
 
@@ -57,6 +59,15 @@ class UserProfileDownloader:
                 self.API_ENDPOINT_URL,
                 params=params
         ) as response:
-            results = response.json()
+            try:
+                results = response.json()
+            except json.decoder.JSONDecodeError:
+                # TODO: implement logging and report the response text + headers
+                # if API hicups, return a stub data dict
+                results = {
+                    "profile": {
+                        "id": nsid
+                    }
+                }
 
         return results["profile"]

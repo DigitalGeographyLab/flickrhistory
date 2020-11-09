@@ -24,8 +24,13 @@ __all__ = ["PhotoDownloader"]
 
 
 import datetime
+import json
 
 import requests
+
+
+class ApiResponseError(BaseException):
+    """Raised when API returns bogus data."""
 
 
 class DownloadBatchIsTooLargeError(BaseException):
@@ -74,7 +79,12 @@ class PhotoDownloader:
                         self.API_ENDPOINT_URL,
                         params=params
                 ) as response:
-                    results = response.json()
+                    try:
+                        results = response.json()
+                    except json.decoder.JSONDecodeError as exception:
+                        # API hicups, let’s consider this batch
+                        # unsuccessful and start over
+                        raise ApiResponseError(response.text) from exception
 
             try:
                 num_photos = int(results["photos"]["total"])

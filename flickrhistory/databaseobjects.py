@@ -96,11 +96,20 @@ class FlickrUser(Base):
     @classmethod
     def from_raw_api_data_flickrprofilegetprofile(cls, data):
         """Initialise a new FlickrUser with a flickr.profile.getProfile data dict."""
+        # the API does not always return all fields
+
+        # "id" is the only field garantueed to be in the data
+        # (because we add it ourselves in databaseobjects.py in case parsing fails)
         user_id, farm = data["id"].split("@N0")
-        join_date = datetime.datetime.fromtimestamp(
-            int(data["join_date"]),
-            tz=datetime.timezone.utc
-        )
+
+        # "joindate" needs special attentation
+        try:
+            join_date = datetime.datetime.fromtimestamp(
+                int(data["join_date"]),
+                tz=datetime.timezone.utc
+            )
+        except KeyError:
+            join_date = None
 
         user_data = {
             "id": user_id,
@@ -109,7 +118,7 @@ class FlickrUser(Base):
             "join_date": join_date
         }
 
-        # the API does not always return all fields
+        # all the other fields can be added as they are (if they exist)
         for field in [
             "first_name",
             "last_name",
@@ -194,51 +203,90 @@ class FlickrPhoto(Base):
     @classmethod
     def from_raw_api_data_flickrphotossearch(cls, data):
         """Initialise a new FlickrPhoto with a flickr.photos.search data dict."""
-        if data["datetakenunknown"] == "0":
-            date_taken = None
-        else:
-            try:
-                date_taken = datetime.datetime.fromisoformat(
+        # the API does not always return all fields
+        # we need to figure out which ones we can use
+
+        # and do quite a lot of clean-up because the flickr API
+        # also returns fairly weird data, sometimes
+
+        # another side effect is that we can initialise
+        # with incomplete data (only id needed),
+        # which helps with bad API responses
+
+        photo_data = {}
+
+        # "id" is the only field garantueed to be in the data
+        # (because we add it ourselves in databaseobjects.py in case parsing fails)
+        photo_data["id"] = data["id"]
+
+        # server and secret are kinda straight-forward
+        try:
+            photo_data["server"] = data["server"]
+        except KeyError:
+            pass
+
+        try:
+            photo_data["secret"] = bytes.fromhex(data["secret"])
+        except (
+            ValueError,  # some non-hex character
+            KeyError
+        ):
+            pass
+
+        try:
+            photo_data["title"] = data["title"]
+        except KeyError:
+            pass
+
+        try:
+            photo_data["description"] = data["description"]["_content"]
+        except KeyError:
+            pass
+
+        # the dates need special attention
+        try:
+            if data["datetakenunknown"] == "0":
+                photo_data["date_taken"] = None
+            else:
+                photo_data["date_taken"] = datetime.datetime.fromisoformat(
                     data["datetaken"]
                 ).astimezone(datetime.timezone.utc)
-            except ValueError:
-                # there is weirdly quite a lot of photos with
-                # date_taken "0000-01-01 00:00:00"
-                # Year 0 does not exist, there’s 1BCE, then 1CE, nothing in between
-                date_taken = None
+        except ValueError:
+            # there is weirdly quite a lot of photos with
+            # date_taken "0000-01-01 00:00:00"
+            # Year 0 does not exist, there’s 1BCE, then 1CE, nothing in between
+            photo_data["date_taken"] = None
+        except KeyError:
+            # fields do not exist in the dict we got
+            pass
 
-        date_posted = datetime.datetime.fromtimestamp(
-            int(data["dateupload"]),
-            tz=datetime.timezone.utc
-        )
+        try:
+            photo_data["date_posted"] = datetime.datetime.fromtimestamp(
+                int(data["dateupload"]),
+                tz=datetime.timezone.utc
+            )
+        except KeyError:
+            pass
 
+        # geometry
         try:
             longitude = float(data["longitude"])
             latitude = float(data["latitude"])
             assert longitude != 0 and latitude != 0
-            geom = "SRID=4326;POINT({longitude:f} {latitude:f})".format(
+            photo_data["geom"] = "SRID=4326;POINT({longitude:f} {latitude:f})".format(
                 longitude=longitude,
                 latitude=latitude
             )
-        except (TypeError, AssertionError):
-            geom = None
+        except (
+            AssertionError,  # lon/lat is at exactly 0°N/S, 0°W/E -> bogus
+            KeyError,        # not contained in API dict
+            TypeError        # weird data returned
+        ):
+            pass
 
-        photo_data = {
-            "id": data["id"],
-
-            "server": data["server"],
-            "secret": bytes.fromhex(data["secret"]),
-
-            "title": data["title"],
-            "description": data["description"]["_content"],
-
-            "date_taken": date_taken,
-            "date_posted": date_posted,
-
-            "geom": geom,
-
-            "user": FlickrUser.from_raw_api_data_flickrphotossearch(data)
-        }
+        # finally, the user
+        # (let’s just delegate that to the FlickrUser constructor)
+        photo_data["user"] = FlickrUser.from_raw_api_data_flickrphotossearch(data)
 
         return cls(**photo_data)
 

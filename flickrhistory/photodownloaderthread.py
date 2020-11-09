@@ -31,8 +31,9 @@ import sqlalchemy
 from .config import Config
 from .databaseobjects import FlickrPhoto
 from .photodownloader import (
-    PhotoDownloader,
-    DownloadBatchIsTooLargeError
+    ApiResponseError,
+    DownloadBatchIsTooLargeError,
+    PhotoDownloader
 )
 
 
@@ -88,8 +89,10 @@ class PhotoDownloaderThread(threading.Thread):
                     ) as session:
                         try:
                             with session.begin():
-                                flickr_photo = FlickrPhoto.from_raw_api_data_flickrphotossearch(
-                                    photo
+                                flickr_photo = (
+                                    FlickrPhoto.from_raw_api_data_flickrphotossearch(
+                                        photo
+                                    )
                                 )
                                 session.merge(flickr_photo)
                         except sqlalchemy.exc.IntegrityError:
@@ -98,8 +101,10 @@ class PhotoDownloaderThread(threading.Thread):
                             time.sleep(1.0)
                             with session.begin():
                                 session.flush()
-                                flickr_photo = FlickrPhoto.from_raw_api_data_flickrphotossearch(
-                                    photo
+                                flickr_photo = (
+                                    FlickrPhoto.from_raw_api_data_flickrphotossearch(
+                                        photo
+                                    )
                                 )
                                 session.merge(flickr_photo)
 
@@ -110,6 +115,15 @@ class PhotoDownloaderThread(threading.Thread):
                         # in fact downloaded, not what our quota was
                         timespan.end = flickr_photo.date_posted
                         break
+
+            except ApiResponseError:
+                # API returned some bogus/none-JSON data
+                # let’s add this timespan to the other end
+                # of the todo deque and start over
+                # TODO: implement logging and log the
+                # data (which is in the exception’s message)
+                self._todo_deque.appendleft(timespan)
+                continue
 
             except DownloadBatchIsTooLargeError:
                 # too many photos in this time span,
