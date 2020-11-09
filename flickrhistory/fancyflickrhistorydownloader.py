@@ -27,7 +27,6 @@ Overloaded to provide fancy console output
 __all__ = ["FancyFlickrHistoryDownloader"]
 
 
-import datetime
 import threading
 
 import blessed
@@ -85,7 +84,6 @@ class FancyFlickrHistoryDownloader(BasicFlickrHistoryDownloader):
         """Initialise FlickrHistoryDownloader."""
         super().__init__()
 
-        self.started = datetime.datetime.now()
         self.terminal = blessed.Terminal()
 
         print(self.WELCOME.format(t=self.terminal))
@@ -141,15 +139,3 @@ class FancyFlickrHistoryDownloader(BasicFlickrHistoryDownloader):
                     profile_rate=profile_rate
                 )
             )
-
-    @property
-    def _statistics(self):
-        runtime = float((datetime.datetime.now() - self.started).total_seconds())
-
-        photo_count = sum([worker.count for worker in self._worker_threads])
-        photo_rate = photo_count / runtime
-
-        profile_count = self.user_profile_updater_thread.count
-        profile_rate = profile_count / runtime
-
-        return (photo_count, photo_rate, profile_count, profile_rate)
