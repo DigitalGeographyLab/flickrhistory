@@ -25,6 +25,9 @@ __all__ = [
     "__version__",
 ]
 
-
-from .flickrhistorydownloader import FlickrHistoryDownloader
 from .__version__ import __version__
+
+try:
+    from .flickrhistorydownloader import FlickrHistoryDownloader
+except ImportError:
+    FlickrHistoryDownloader = None
