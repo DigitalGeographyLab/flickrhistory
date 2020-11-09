@@ -1,3 +1,6 @@
+- **0.0.7** (2020-11-09):
+    - fixed issue #6: working around bogus API responses
+
 - **0.0.6** (2020-11-07):
     - fancy console output 💍
 
