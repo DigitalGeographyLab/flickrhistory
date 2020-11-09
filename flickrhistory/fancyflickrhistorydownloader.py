@@ -51,11 +51,17 @@ class FancyFlickrHistoryDownloader(BasicFlickrHistoryDownloader):
     )
 
     STATUS = (
-        "{t.normal} Downloaded metadata for {t.bold}{t.magenta}{photos: 9d} 📷 photos "
+        "{t.normal} Downloaded metadata for "
+        + "{t.bold}{t.magenta}{photos: 9d} 📷 photos "
         + "{t.normal}{t.magenta}{photo_rate: 11.1f}/s\n"
-        + "{t.normal} and updated             {t.bold}{t.red}{profiles: 9d} 👱 user profiles "
+
+        + "{t.normal} and updated             "
+        + "{t.bold}{t.red}{profiles: 9d} 👱 user profiles "
         + "{t.normal}{t.red}{profile_rate: 3.1f}/s\n"
-        + "{t.normal} using                   {t.bold}{t.green}{workers: 9d} 💪 workers\n"
+
+        + "{t.normal} using                   "
+        + "{t.bold}{t.green}{workers: 9d} 💪 workers\n"
+
         + "{t.normal}{t.bold} TODO:                {todo: 12d} 🚧 time slots"
     )
     STATUS_LINES = len(STATUS.splitlines())
@@ -81,22 +87,22 @@ class FancyFlickrHistoryDownloader(BasicFlickrHistoryDownloader):
         # scroll down terminal, in case we’re at the bottom
         print(self.STATUS_LINES * "\n", end="")
 
-        self.POS_Y, self.POS_X = self.terminal.get_location(timeout=5)
+        self.pos_y, _ = self.terminal.get_location(timeout=5)
         self._photo_count = 0
         self._profile_count = 0
 
     def report_progress(self):
         """Report current progress."""
-        self._update_statistics()
+        photo_count, photo_rate, profile_count, profile_rate = self._statistics
 
-        with self.terminal.location(0, (self.POS_Y - self.STATUS_LINES)):
+        with self.terminal.location(0, (self.pos_y - self.STATUS_LINES)):
             print(
                 self.STATUS.format(
                     t=self.terminal,
-                    photos=self.photo_count,
-                    photo_rate=self.photo_rate,
-                    profiles=self.profile_count,
-                    profile_rate=self.profile_rate,
+                    photos=photo_count,
+                    photo_rate=photo_rate,
+                    profiles=profile_count,
+                    profile_rate=profile_rate,
                     workers=(threading.active_count() - self.NUM_MANAGERS),
                     todo=len(self._todo_deque)
                 )
@@ -106,10 +112,10 @@ class FancyFlickrHistoryDownloader(BasicFlickrHistoryDownloader):
         """Tell the user that we initiated shutdown."""
         # clear the status output
         for i in range(self.STATUS_LINES):
-            with self.terminal.location(0, (self.POS_Y - (i + 1))):
+            with self.terminal.location(0, (self.pos_y - (i + 1))):
                 print(self.terminal.clear_eol)
 
-        with self.terminal.location(0, (self.POS_Y - self.STATUS_LINES)):
+        with self.terminal.location(0, (self.pos_y - self.STATUS_LINES)):
             print(self.SHUTDOWN_ANNOUNCEMENT.format(t=self.terminal))
 
     def summarise_overall_progress(self):
@@ -118,23 +124,29 @@ class FancyFlickrHistoryDownloader(BasicFlickrHistoryDownloader):
 
         (Called right before exit)
         """
-        self._update_statistics()
-        with self.terminal.location(0, (self.POS_Y - self.STATUS_LINES)):
+        photo_count, photo_rate, profile_count, profile_rate = self._statistics
+        with self.terminal.location(0, (self.pos_y - self.STATUS_LINES)):
             print(
                 self.SUMMARY.format(
                     t=self.terminal,
-                    photos=self.photo_count,
-                    photo_rate=self.photo_rate,
-                    profiles=self.profile_count,
-                    profile_rate=self.profile_rate
+                    photos=photo_count,
+                    photo_rate=photo_rate,
+                    profiles=profile_count,
+                    profile_rate=profile_rate
                 )
             )
 
-    def _update_statistics(self):
-        self.runtime = float((datetime.datetime.now() - self.started).total_seconds())
+    @property
+    def _statistics(self):
+        started = datetime.datetime.now()
 
-        self.photo_count = sum([worker.count for worker in self._worker_threads])
-        self.photo_rate = self.photo_count / self.runtime
+        while True:
+            runtime = float((datetime.datetime.now() - started).total_seconds())
 
-        self.profile_count = self.user_profile_updater_thread.count
-        self.profile_rate = self.profile_count / self.runtime
+            photo_count = sum([worker.count for worker in self._worker_threads])
+            photo_rate = photo_count / runtime
+
+            profile_count = self.user_profile_updater_thread.count
+            profile_rate = profile_count / runtime
+
+            yield (photo_count, photo_rate, profile_count, profile_rate)
