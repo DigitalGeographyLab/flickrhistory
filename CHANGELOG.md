@@ -1,3 +1,6 @@
+- **0.0.8** (2020-11-09):
+    - improvement: multi-threaded user profile download (re issue #8)
+
 - **0.0.7** (2020-11-09):
     - fixed issue #6: working around bogus API responses,
     - one more try with dunamai for automatic semantic versioning
