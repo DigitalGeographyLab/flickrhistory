@@ -21,10 +21,11 @@
 
 
 __all__ = [
-    "FlickrHistoryDownloader",
-    "__version__",
+    "__version__"
 ]
 
 
-from .flickrhistorydownloader import FlickrHistoryDownloader
-from .__version__ import __version__
+import dunamai as _dunamai
+
+
+__version__ = _dunamai.Version.from_any_vcs().serialize()
