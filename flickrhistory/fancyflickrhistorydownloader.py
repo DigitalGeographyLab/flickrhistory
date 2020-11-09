@@ -48,6 +48,8 @@ class FancyFlickrHistoryDownloader(BasicFlickrHistoryDownloader):
         + "{t.normal}{t.blue}"
         + version
         + "{t.bold} ###"
+
+        + "{t.norma}"
     )
 
     STATUS = (
@@ -63,16 +65,20 @@ class FancyFlickrHistoryDownloader(BasicFlickrHistoryDownloader):
         + "{t.bold}{t.green}{workers: 9d} 💪 workers\n"
 
         + "{t.normal}{t.bold} TODO:                {todo: 12d} 🚧 time slots"
+
+        + "{t.normal}"
     )
     STATUS_LINES = len(STATUS.splitlines())
 
-    SHUTDOWN_ANNOUNCEMENT = "{t.bold}Cleaning up. 🛑"
+    SHUTDOWN_ANNOUNCEMENT = "{t.bold}Cleaning up. 🛑 {t.normal}"
 
     SUMMARY = (
         "{t.normal}Downloaded  {t.bold}{t.magenta}{photos: 9d} 📷 photos "
         + "{t.normal}{t.magenta}{photo_rate: 11.1f}/s\n"
         + "{t.normal}and updated {t.bold}{t.red}{profiles: 9d} 👱 user profiles "
         + "{t.normal}{t.red}{profile_rate: 3.1f}/s\n"
+
+        + "{t.normal}"
     )
 
     def __init__(self):
