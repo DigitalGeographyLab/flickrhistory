@@ -1,3 +1,10 @@
+- **0.0.9** (2020-10-11):
+    - added README (issue #7)
+    - fixed issue with database connections being left open (issue #15)
+    - worked around incomplete API responses (issue #9)
+    - dumped dunamai (for good?)
+
+
 - **0.0.8** (2020-11-09):
     - improvement: multi-threaded user profile download (re issue #8)
     - removed dunamai, run it as a git pre-commit hook, rather
