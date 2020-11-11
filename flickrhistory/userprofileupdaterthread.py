@@ -79,13 +79,13 @@ class UserProfileUpdaterThread(threading.Thread):
     def nsids_of_users_without_detailed_information(self):
         """Find nsid of incomplete user profiles."""
         # Find nsid of incomplete user profiles
-        # We use first_name IS NULL, because after
+        # We use join_date IS NULL, because after
         # updating a profile it will be "", so NULL is
         # a good way of finding “new” profiles
         with sqlalchemy.orm.Session(self._engine) as session:
             if self._bounds is None:
                 nsids_of_users_without_detailed_information = (
-                    session.query(FlickrUser.nsid).filter_by(first_name=None)
+                    session.query(FlickrUser.nsid).filter_by(join_date=None)
                 )
             else:
                 bounds = (
@@ -98,17 +98,17 @@ class UserProfileUpdaterThread(threading.Thread):
                         .label("upper")
                     )
                     .select_from(FlickrUser)
-                    .filter_by(first_name=None)
+                    .filter_by(join_date=None)
                     .cte()
                 )
                 nsids_of_users_without_detailed_information = (
                     session.query(FlickrUser.nsid)
-                    .filter_by(first_name=None)
+                    .filter_by(join_date=None)
                     .where(FlickrUser.id.between(bounds.c.lower, bounds.c.upper))
                 )
 
-        for nsid, in nsids_of_users_without_detailed_information:
-            yield nsid
+            for nsid, in nsids_of_users_without_detailed_information:
+                yield nsid
 
     def run(self):
         """Get TimeSpans off todo_queue and download photos."""
