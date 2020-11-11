@@ -30,4 +30,4 @@ try:
 except ImportError:
     FlickrHistoryDownloader = None
 
-__version__ = "0.0.8.post5.dev0+4b6040b"
+__version__ = "0.0.8.post4.dev0+268697f"
