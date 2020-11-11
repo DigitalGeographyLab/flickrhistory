@@ -61,7 +61,11 @@ class UserProfileDownloader:
         ) as response:
             try:
                 results = response.json()
-            except json.decoder.JSONDecodeError:
+                assert "profile" in results
+            except (
+                AssertionError,
+                json.decoder.JSONDecodeError
+            ):
                 # TODO: implement logging and report the response text + headers
                 # if API hicups, return a stub data dict
                 results = {
