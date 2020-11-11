@@ -28,6 +28,6 @@ __all__ = [
 try:
     from .flickrhistorydownloader import FlickrHistoryDownloader
 except ImportError:
-    FlickrHistoryDownloader = None
+    pass
 
-__version__ = "0.0.8.post4.dev0+268697f"
+__version__ = "0.0.9"
