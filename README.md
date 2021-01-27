@@ -44,7 +44,7 @@ Copy the example configuration file [flickrhistory.yml.example](https://gitlab.c
 Adapt the configuration:
 
 - Configure a PostgreSQL connection string (`connection_string`), pointing to an existing database (with the PostGIS extension enabled).
-- Configure one or more API [access keys](https://flickr.com/services/api/keys/) to the flickr API `flickr_api_keys`).
+- Configure one or more API [access keys](https://flickr.com/services/api/keys/) to the flickr API `flickr_api_keys`). Using more than one API key most certainly violating the Terms and Conditions of the Flickr API (don’t do it!).
 
 If you have a cache file from a previous installation in which already downloaded time periods are saved, copy it to `${XDG_CACHE_HOME}/flickrhistory.yml` or `%LOCALAPPDATA%/flickrhistory.yml` on Linux or MacOS, and Microsoft Windows, respectively.
 
