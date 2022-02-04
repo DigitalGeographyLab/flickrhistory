@@ -46,8 +46,13 @@ class BasicFlickrHistoryDownloader:
     """Download (all) georeferenced flickr posts."""
 
     NUM_WORKERS = multiprocessing.cpu_count() + 1  # 1 == user_profile_updater
-
     NUM_MANAGERS = 2  # main thread + cache_updater
+
+    # if output into pipe (e.g. logger, systemd), then
+    # print status every 10 minutes, else every 1/5 sec
+    # also normal linefeed instead of carriage return for piped output
+    STATUS_UPDATE_SEC = 0.2 if sys.stderr.isatty() else 600
+    STATUS_UPDATE_LINE_END = "\r" if sys.stderr.isatty() else "\n"
 
     def __init__(self):
         """Intialise a FlickrHistory object."""
@@ -93,7 +98,7 @@ class BasicFlickrHistoryDownloader:
 
             while threading.active_count() > self.NUM_MANAGERS:
                 self.report_progress()
-                time.sleep(0.1)
+                time.sleep(self.STATUS_UPDATE_SEC)
 
         except (
             KeyboardInterrupt,
@@ -126,7 +131,8 @@ class BasicFlickrHistoryDownloader:
                 todo=len(self._todo_deque)
             ),
             file=sys.stderr,
-            end="\r"
+            end=self.STATUS_UPDATE_LINE_END,
+            flush=True
         )
 
     def announce_shutdown(self):
@@ -134,7 +140,8 @@ class BasicFlickrHistoryDownloader:
         print(
             "Cleaning up" + (" " * 69),  # 80 - len("Cleaning up")
             file=sys.stderr,
-            end="\r"
+            end=self.STATUS_UPDATE_LINE_END,
+            flush=True
         )
 
     def summarise_overall_progress(self):
