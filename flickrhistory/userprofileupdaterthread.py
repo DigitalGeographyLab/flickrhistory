@@ -36,6 +36,8 @@ from .userprofiledownloader import UserProfileDownloader
 class UserProfileUpdaterThread(threading.Thread):
     """Finds incomplete user profiles and downloads missing data from the flickr API."""
 
+    MAX_RETRIES = 5  # once all users have been updated, retry this times (with 10 min breaks)
+
     def __init__(
             self,
             api_key_manager,
@@ -114,7 +116,12 @@ class UserProfileUpdaterThread(threading.Thread):
         """Get TimeSpans off todo_queue and download photos."""
         user_profile_downloader = UserProfileDownloader(self._api_key_manager)
 
-        while not self.shutdown.is_set():
+        retries = 0
+
+        while not (
+                self.shutdown.is_set()
+                or retries >= self.MAX_RETRIES
+        ):
             for nsid in self.nsids_of_users_without_detailed_information:
                 with sqlalchemy.orm.Session(
                         self._engine
@@ -139,3 +146,4 @@ class UserProfileUpdaterThread(threading.Thread):
                 if self.shutdown.is_set():
                     break
                 time.sleep(0.1)
+            retries += 1

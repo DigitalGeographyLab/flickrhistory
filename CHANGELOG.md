@@ -1,3 +1,6 @@
+- **0.1.0** (2022-03-30):
+    - stop looping after all data until start timestamp retrieved
+
 - **0.0.9** (2020-10-11):
     - added README (issue #7)
     - fixed issue with database connections being left open (issue #15)
