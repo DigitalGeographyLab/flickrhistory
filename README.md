@@ -7,9 +7,11 @@ The script will download all photos until its starting time, and keep track of a
 *Flickrhistory* makes use of multiple threads and can use multiple API keys (something that most likely disagrees with flickr’s T&C, use feature at your own risk).
 
 If you use *flickrhistory* for scientific research, please cite it in your publication: <br />
-Fink, C. (2020): *flickrhistory: Python tool to download a complete flickr timeline*. [doi:TODO](https://doi.org/TODO).
+> Fink, C. (2020): *flickrhistory: a Python tool to download a complete flickr timeline*. [doi:10.5281/zenodo.6566196](https://doi.org/10.5281/zenodo.6566196).
 
+<!--//
 TODO: create separate repository containing a one-stop-shop script for updating the HELICS/DGL dataset, and add a link for Vuokko, Wäeski and co here.
+//-->
 
 ![screen shot](extra/images/screenshot.png)
 
