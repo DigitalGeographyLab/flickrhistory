@@ -1,3 +1,7 @@
+- **0.1.1** (2022-05-20):
+    - obtain Zenodo DOI
+    - push to PyPi
+
 - **0.1.0** (2022-03-30):
     - stop looping after all data until start timestamp retrieved
 
