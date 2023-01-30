@@ -1,3 +1,6 @@
+- **0.1.2** (2023-01-30):
+    - fix a bug that caused `date_taken` to not be recorded (issue #19)
+
 - **0.1.1** (2022-05-20):
     - obtain Zenodo DOI
     - push to PyPi

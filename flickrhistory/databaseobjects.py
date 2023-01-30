@@ -245,19 +245,16 @@ class FlickrPhoto(Base):
 
         # the dates need special attention
         try:
-            if data["datetakenunknown"] == "0":
-                photo_data["date_taken"] = None
-            else:
-                photo_data["date_taken"] = datetime.datetime.fromisoformat(
-                    data["datetaken"]
-                ).astimezone(datetime.timezone.utc)
+            photo_data["date_taken"] = datetime.datetime.fromisoformat(
+                data["datetaken"]
+            ).astimezone(datetime.timezone.utc)
         except ValueError:
             # there is weirdly quite a lot of photos with
             # date_taken "0000-01-01 00:00:00"
             # Year 0 does not exist, there’s 1BCE, then 1CE, nothing in between
             photo_data["date_taken"] = None
         except KeyError:
-            # fields do not exist in the dict we got
+            # field does not exist in the dict we got
             pass
 
         try:
