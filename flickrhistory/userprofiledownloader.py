@@ -26,6 +26,9 @@ __all__ = ["UserProfileDownloader"]
 import json
 
 import requests
+import urllib3
+
+from .exceptions import ApiResponseError
 
 
 class UserProfileDownloader:
@@ -55,23 +58,31 @@ class UserProfileDownloader:
             params["api_key"] = api_key
             params.update(query)
 
-        with requests.get(
-                self.API_ENDPOINT_URL,
-                params=params
-        ) as response:
-            try:
+        try:
+            with requests.get(
+                    self.API_ENDPOINT_URL,
+                    params=params
+            ) as response:
                 results = response.json()
                 assert "profile" in results
-            except (
-                AssertionError,
-                json.decoder.JSONDecodeError
-            ):
-                # TODO: implement logging and report the response text + headers
-                # if API hicups, return a stub data dict
-                results = {
-                    "profile": {
-                        "id": nsid
-                    }
+
+        except (
+            ConnectionError,
+            json.decoder.JSONDecodeError,
+            requests.exceptions.RequestException,
+            urllib3.exceptions.HTTPError,
+        ) as exception:
+            # API hicups, let’s consider this batch
+            # unsuccessful and start over
+            raise ApiResponseError(response.text) from exception
+
+        except AssertionError:
+            # TODO: implement logging and report the response text + headers
+            # if API hicups, return a stub data dict
+            results = {
+                "profile": {
+                    "id": nsid
                 }
+            }
 
         return results["profile"]

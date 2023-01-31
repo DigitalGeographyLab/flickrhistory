@@ -30,6 +30,7 @@ import sqlalchemy
 
 from .config import Config
 from .databaseobjects import FlickrUser
+from .exceptions import ApiResponseError
 from .userprofiledownloader import UserProfileDownloader
 
 
@@ -123,17 +124,23 @@ class UserProfileUpdaterThread(threading.Thread):
                 or retries >= self.MAX_RETRIES
         ):
             for nsid in self.nsids_of_users_without_detailed_information:
-                with sqlalchemy.orm.Session(
-                        self._engine
-                ) as session, session.begin():
-                    flickr_user = (
-                        FlickrUser.from_raw_api_data_flickrprofilegetprofile(
-                            user_profile_downloader.get_profile_for_nsid(nsid)
+                try:
+                    with sqlalchemy.orm.Session(
+                            self._engine
+                    ) as session, session.begin():
+                        flickr_user = (
+                            FlickrUser.from_raw_api_data_flickrprofilegetprofile(
+                                user_profile_downloader.get_profile_for_nsid(nsid)
+                            )
                         )
-                    )
-                    session.merge(flickr_user)
+                        session.merge(flickr_user)
 
-                self.count += 1
+                    self.count += 1
+
+                except ApiResponseError:
+                    # API returned some bogus/none-JSON data,
+                    # let’s try again later
+                    continue
 
                 if self.shutdown.is_set():
                     break
