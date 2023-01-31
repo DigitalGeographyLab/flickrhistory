@@ -30,11 +30,8 @@ import sqlalchemy
 
 from .config import Config
 from .databaseobjects import FlickrPhoto
-from .photodownloader import (
-    ApiResponseError,
-    DownloadBatchIsTooLargeError,
-    PhotoDownloader
-)
+from .exceptions import ApiResponseError, DownloadBatchIsTooLargeError
+from .photodownloader import PhotoDownloader
 
 
 class PhotoDownloaderThread(threading.Thread):

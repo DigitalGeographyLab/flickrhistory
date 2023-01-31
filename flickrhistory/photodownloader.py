@@ -27,14 +27,9 @@ import datetime
 import json
 
 import requests
+import urllib3
 
-
-class ApiResponseError(BaseException):
-    """Raised when API returns bogus data."""
-
-
-class DownloadBatchIsTooLargeError(BaseException):
-    """Raised when batch larger than usual flickr download limit."""
+from .exceptions import ApiResponseError, DownloadBatchIsTooLargeError
 
 
 class PhotoDownloader:
@@ -75,16 +70,21 @@ class PhotoDownloader:
                 params["api_key"] = api_key
                 params.update(query)
 
-                with requests.get(
-                        self.API_ENDPOINT_URL,
-                        params=params
-                ) as response:
-                    try:
+                try:
+                    with requests.get(
+                            self.API_ENDPOINT_URL,
+                            params=params
+                    ) as response:
                         results = response.json()
-                    except json.decoder.JSONDecodeError as exception:
-                        # API hicups, let’s consider this batch
-                        # unsuccessful and start over
-                        raise ApiResponseError(response.text) from exception
+                except (
+                    ConnectionError,
+                    json.decoder.JSONDecodeError,
+                    requests.exceptions.RequestException,
+                    urllib3.exceptions.HTTPError,
+                ) as exception:
+                    # API hicups, let’s consider this batch
+                    # unsuccessful and start over
+                    raise ApiResponseError(response.text) from exception
 
             try:
                 num_photos = int(results["photos"]["total"])

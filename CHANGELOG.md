@@ -1,3 +1,6 @@
+- **0.1.3** (2023-01-31):
+    - handle connection errors more gracefully (issue #20)
+
 - **0.1.2** (2023-01-30):
     - fix a bug that caused `date_taken` to not be recorded (issue #19)
 
