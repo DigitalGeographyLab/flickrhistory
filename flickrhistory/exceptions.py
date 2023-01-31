@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-#   Copyright (C) 2019 Christoph Fink, University of Helsinki
+#   Copyright (C) 2020 Christoph Fink, University of Helsinki
 #
 #   This program is free software; you can redistribute it and/or
 #   modify it under the terms of the GNU General Public License
@@ -17,17 +17,15 @@
 #   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 
-"""Download a complete history of georeferenced flickr posts."""
+"""Custom exceptions."""
 
 
-__all__ = [
-    "FlickrHistoryDownloader",
-    "__version__",
-]
+__all__ = ["ApiResponseError", "DownloadBatchIsTooLargeError"]
 
-try:
-    from .flickrhistorydownloader import FlickrHistoryDownloader
-except ImportError:
-    pass
 
-__version__ = "0.1.3"
+class ApiResponseError(BaseException):
+    """Raised when API returns bogus data."""
+
+
+class DownloadBatchIsTooLargeError(BaseException):
+    """Raised when batch larger than usual flickr download limit."""
