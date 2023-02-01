@@ -74,7 +74,7 @@ class UserProfileDownloader:
         ) as exception:
             # API hicups, let’s consider this batch
             # unsuccessful and start over
-            raise ApiResponseError(response.text) from exception
+            raise ApiResponseError() from exception
 
         except AssertionError:
             # TODO: implement logging and report the response text + headers
