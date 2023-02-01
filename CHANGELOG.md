@@ -1,3 +1,6 @@
+- **0.1.4** (2023-02-01):
+    - fixed bug introduced in 0.1.3
+
 - **0.1.3** (2023-01-31):
     - handle connection errors more gracefully (issue #20)
 
