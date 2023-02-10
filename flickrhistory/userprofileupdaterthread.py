@@ -108,6 +108,7 @@ class UserProfileUpdaterThread(threading.Thread):
                     session.query(FlickrUser.nsid)
                     .filter_by(join_date=None)
                     .where(FlickrUser.id.between(bounds.c.lower, bounds.c.upper))
+                    .yield_per(1000)
                 )
 
             for nsid, in nsids_of_users_without_detailed_information:
