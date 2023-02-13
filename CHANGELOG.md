@@ -1,3 +1,6 @@
+- **0.2.0** (2023-02-13):
+    - server-side cursors for catching up missed data records
+
 - **0.1.4** (2023-02-01):
     - fixed bug introduced in 0.1.3
 
