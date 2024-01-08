@@ -37,12 +37,7 @@ from .photodownloader import PhotoDownloader
 class PhotoDownloaderThread(threading.Thread):
     """Wraps an PhotoDownloader to run in a separate thread."""
 
-    def __init__(
-            self,
-            api_key_manager,
-            todo_deque,
-            done_queue
-    ):
+    def __init__(self, api_key_manager, todo_deque, done_queue):
         """
         Intialize an PhotoDownloaderThread.
 
@@ -81,9 +76,7 @@ class PhotoDownloaderThread(threading.Thread):
 
             try:
                 for photo in photo_downloader.photos:
-                    with sqlalchemy.orm.Session(
-                        self._engine
-                    ) as session:
+                    with sqlalchemy.orm.Session(self._engine) as session:
                         try:
                             with session.begin():
                                 flickr_photo = (

@@ -46,11 +46,7 @@ class Cache:
 
     """
 
-    def __init__(
-            self,
-            cache=None,
-            cache_file_basename=None
-    ):
+    def __init__(self, cache=None, cache_file_basename=None):
         """Initialise a Cache object, load cache from file."""
         self._cache = {}
 
@@ -60,11 +56,11 @@ class Cache:
         self._cache_file = os.path.abspath(
             os.path.join(
                 (
-                    os.environ.get('LOCALAPPDATA')
-                    or os.environ.get('XDG_CACHE_HOME')
-                    or os.path.join(os.environ['HOME'], '.cache')
+                    os.environ.get("LOCALAPPDATA")
+                    or os.environ.get("XDG_CACHE_HOME")
+                    or os.path.join(os.environ["HOME"], ".cache")
                 ),
-                "{:s}.yml".format(cache_file_basename)
+                "{:s}.yml".format(cache_file_basename),
             )
         )
 
@@ -76,19 +72,13 @@ class Cache:
         cache = {}
 
         try:
-            cache.update(
-                yaml.safe_load(
-                    open(self._cache_file, "r", encoding="utf-8")
-                )
-            )
+            cache.update(yaml.safe_load(open(self._cache_file, "r", encoding="utf-8")))
         except FileNotFoundError:
             pass
 
         if cache == {}:
             warnings.warn(
-                "No cache found in file {}, starting empty".format(
-                    self._cache_file
-                )
+                "No cache found in file {}, starting empty".format(self._cache_file)
             )
 
         return cache
@@ -98,14 +88,10 @@ class Cache:
             yaml.dump(
                 self._cache,
                 open(self._cache_file, "w", encoding="utf-8"),
-                Dumper=YamlNoAliasDumper
+                Dumper=YamlNoAliasDumper,
             )
         except PermissionError:
-            warnings.warn(
-                "Could not write cache to {}".format(
-                    self._cache_file
-                )
-            )
+            warnings.warn("Could not write cache to {}".format(self._cache_file))
 
     def __getitem__(self, pos):
         """Retrieve a cache entry."""

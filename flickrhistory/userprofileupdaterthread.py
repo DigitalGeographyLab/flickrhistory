@@ -37,13 +37,11 @@ from .userprofiledownloader import UserProfileDownloader
 class UserProfileUpdaterThread(threading.Thread):
     """Finds incomplete user profiles and downloads missing data from the flickr API."""
 
-    MAX_RETRIES = 5  # once all users have been updated, retry this times (with 10 min breaks)
+    MAX_RETRIES = (
+        5  # once all users have been updated, retry this times (with 10 min breaks)
+    )
 
-    def __init__(
-            self,
-            api_key_manager,
-            partition=None
-    ):
+    def __init__(self, api_key_manager, partition=None):
         """
         Intialize a UserProfileUpdateThread.
 
@@ -63,12 +61,9 @@ class UserProfileUpdaterThread(threading.Thread):
             assert part <= number_of_partitions
             self._bounds = (
                 (part - 1) * 1.0 / number_of_partitions,
-                part * 1.0 / number_of_partitions
+                part * 1.0 / number_of_partitions,
             )
-        except (
-            AssertionError,
-            TypeError
-        ):
+        except (AssertionError, TypeError):
             self._bounds = None
 
         self.shutdown = threading.Event()
@@ -87,9 +82,9 @@ class UserProfileUpdaterThread(threading.Thread):
         # a good way of finding “new” profiles
         with sqlalchemy.orm.Session(self._engine) as session:
             if self._bounds is None:
-                nsids_of_users_without_detailed_information = (
-                    session.query(FlickrUser.nsid).filter_by(join_date=None)
-                )
+                nsids_of_users_without_detailed_information = session.query(
+                    FlickrUser.nsid
+                ).filter_by(join_date=None)
             else:
                 bounds = (
                     sqlalchemy.select(
@@ -98,7 +93,7 @@ class UserProfileUpdaterThread(threading.Thread):
                         .label("lower"),
                         sqlalchemy.sql.functions.percentile_disc(self._bounds[1])
                         .within_group(FlickrUser.id)
-                        .label("upper")
+                        .label("upper"),
                     )
                     .select_from(FlickrUser)
                     .filter_by(join_date=None)
@@ -111,7 +106,7 @@ class UserProfileUpdaterThread(threading.Thread):
                     .yield_per(1000)
                 )
 
-            for nsid, in nsids_of_users_without_detailed_information:
+            for (nsid,) in nsids_of_users_without_detailed_information:
                 yield nsid
 
     def run(self):
@@ -120,14 +115,11 @@ class UserProfileUpdaterThread(threading.Thread):
 
         retries = 0
 
-        while not (
-                self.shutdown.is_set()
-                or retries >= self.MAX_RETRIES
-        ):
+        while not (self.shutdown.is_set() or retries >= self.MAX_RETRIES):
             for nsid in self.nsids_of_users_without_detailed_information:
                 try:
                     with sqlalchemy.orm.Session(
-                            self._engine
+                        self._engine
                     ) as session, session.begin():
                         flickr_user = (
                             FlickrUser.from_raw_api_data_flickrprofilegetprofile(

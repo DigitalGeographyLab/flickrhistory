@@ -57,28 +57,14 @@ class Config:
 
     _config = {}
 
-    def __init__(
-            self,
-            config=None,
-            config_files=None,
-            config_files_basename=None
-    ):
+    def __init__(self, config=None, config_files=None, config_files_basename=None):
         """Initialise a Config object, load configuration from file."""
         if not self._config:
-            self._config.update(
-                self._load_config(
-                    config_files,
-                    config_files_basename
-                )
-            )
+            self._config.update(self._load_config(config_files, config_files_basename))
         if config is not None:
             self._config.update(config)
 
-    def _load_config(
-            self,
-            config_files,
-            config_files_basename
-    ):
+    def _load_config(self, config_files, config_files_basename):
         config = {}
 
         if config_files is not None:
@@ -93,30 +79,24 @@ class Config:
                 os.path.abspath(
                     os.path.join(
                         (
-                            os.environ.get('APPDATA')
-                            or os.environ.get('XDG_CONFIG_HOME')
-                            or os.path.join(os.environ['HOME'], '.config')
+                            os.environ.get("APPDATA")
+                            or os.environ.get("XDG_CONFIG_HOME")
+                            or os.path.join(os.environ["HOME"], ".config")
                         ),
-                        "{:s}.yml".format(config_files_basename)
+                        "{:s}.yml".format(config_files_basename),
                     )
-                )
+                ),
             ]
 
         for config_file in config_files:
             try:
-                config.update(
-                    yaml.safe_load(
-                        open(config_file, "r", encoding="utf-8")
-                    )
-                )
+                config.update(yaml.safe_load(open(config_file, "r", encoding="utf-8")))
             except FileNotFoundError:
                 pass
 
         if config == {}:
             warnings.warn(
-                "No configuration found in files {}.".format(
-                    ",".join(config_files)
-                )
+                "No configuration found in files {}.".format(",".join(config_files))
             )
 
         return config

@@ -76,9 +76,7 @@ class BasicFlickrHistoryDownloader:
             # start downloaders
             for _ in range(self.NUM_WORKERS):
                 worker = PhotoDownloaderThread(
-                    self._api_key_manager,
-                    self._todo_deque,
-                    self._done_queue
+                    self._api_key_manager, self._todo_deque, self._done_queue
                 )
                 worker.start()
                 self._worker_threads.append(worker)
@@ -86,8 +84,7 @@ class BasicFlickrHistoryDownloader:
             # start user profile updaters
             for i in range(self.NUM_WORKERS):
                 worker = UserProfileUpdaterThread(
-                    self._api_key_manager,
-                    (i + 1, self.NUM_WORKERS)
+                    self._api_key_manager, (i + 1, self.NUM_WORKERS)
                 )
                 worker.start()
                 self._worker_threads.append(worker)
@@ -100,10 +97,7 @@ class BasicFlickrHistoryDownloader:
                 self.report_progress()
                 time.sleep(self.STATUS_UPDATE_SEC)
 
-        except (
-            KeyboardInterrupt,
-            SigTermReceivedException
-        ):
+        except (KeyboardInterrupt, SigTermReceivedException):
             self.announce_shutdown()
             for worker in self._worker_threads:
                 worker.shutdown.set()
@@ -128,11 +122,11 @@ class BasicFlickrHistoryDownloader:
                 photos=photo_count,
                 profiles=profile_count,
                 workers=(threading.active_count() - self.NUM_MANAGERS),
-                todo=len(self._todo_deque)
+                todo=len(self._todo_deque),
             ),
             file=sys.stderr,
             end=self.STATUS_UPDATE_LINE_END,
-            flush=True
+            flush=True,
         )
 
     def announce_shutdown(self):
@@ -141,7 +135,7 @@ class BasicFlickrHistoryDownloader:
             "Cleaning up" + (" " * 69),  # 80 - len("Cleaning up")
             file=sys.stderr,
             end=self.STATUS_UPDATE_LINE_END,
-            flush=True
+            flush=True,
         )
 
     def summarise_overall_progress(self):
@@ -152,14 +146,10 @@ class BasicFlickrHistoryDownloader:
         """
         photo_count, _, profile_count, _ = self._statistics
         print(
-            (
-                "Downloaded {photos:d} photos "
-                + "and {profiles:d} user profiles"
-            ).format(
-                photos=photo_count,
-                profiles=profile_count
+            ("Downloaded {photos:d} photos " + "and {profiles:d} user profiles").format(
+                photos=photo_count, profiles=profile_count
             ),
-            file=sys.stderr
+            file=sys.stderr,
         )
 
     @property
@@ -169,10 +159,7 @@ class BasicFlickrHistoryDownloader:
         one_day = datetime.timedelta(days=1)  # for comparison
 
         for i in range(len(already_downloaded) - 1):
-            gap = TimeSpan(
-                already_downloaded[i].end,
-                already_downloaded[i + 1].start
-            )
+            gap = TimeSpan(already_downloaded[i].end, already_downloaded[i + 1].start)
             if gap.duration > one_day:
                 divider = math.ceil(gap.duration / one_day)
                 for part_of_gap in gap / divider:
@@ -191,7 +178,8 @@ class BasicFlickrHistoryDownloader:
 
         # delete existing 0-length time spans
         timespans = [
-            timespan for timespan in timespans
+            timespan
+            for timespan in timespans
             if timespan.duration > datetime.timedelta(0)
         ]
 
@@ -206,15 +194,11 @@ class BasicFlickrHistoryDownloader:
         # on top of that, some small timestamps seems to be simply 0 +- timezone offset
         # which invalidates pretty much the entire first day after epoch 0
         # this is why we use epoch 0 + 1 day
-        zero = (
-            datetime.datetime.fromtimestamp(0, tz=datetime.timezone.utc)
-            + datetime.timedelta(days=1)
-        )
+        zero = datetime.datetime.fromtimestamp(
+            0, tz=datetime.timezone.utc
+        ) + datetime.timedelta(days=1)
         now = datetime.datetime.now(datetime.timezone.utc)
-        timespans += [
-            TimeSpan(zero, zero),
-            TimeSpan(now, now)
-        ]
+        timespans += [TimeSpan(zero, zero), TimeSpan(now, now)]
 
         return sum(timespans)  # sum resolves overlaps
 
@@ -222,18 +206,22 @@ class BasicFlickrHistoryDownloader:
     def _statistics(self):
         runtime = float((datetime.datetime.now() - self.started).total_seconds())
 
-        photo_count = sum([
-            worker.count
-            for worker in self._worker_threads
-            if isinstance(worker, PhotoDownloaderThread)
-        ])
+        photo_count = sum(
+            [
+                worker.count
+                for worker in self._worker_threads
+                if isinstance(worker, PhotoDownloaderThread)
+            ]
+        )
         photo_rate = photo_count / runtime
 
-        profile_count = sum([
-            worker.count
-            for worker in self._worker_threads
-            if isinstance(worker, UserProfileUpdaterThread)
-        ])
+        profile_count = sum(
+            [
+                worker.count
+                for worker in self._worker_threads
+                if isinstance(worker, UserProfileUpdaterThread)
+            ]
+        )
         profile_rate = profile_count / runtime
 
         return (photo_count, photo_rate, profile_count, profile_rate)

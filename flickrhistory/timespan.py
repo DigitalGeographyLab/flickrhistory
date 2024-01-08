@@ -20,9 +20,7 @@
 """A period in time starting at a datetime and ending at another datetime."""
 
 
-__all__ = [
-    "TimeSpan"
-]
+__all__ = ["TimeSpan"]
 
 
 import datetime
@@ -33,11 +31,7 @@ import yaml
 class TimeSpan(yaml.YAMLObject):
     """A period in time starting at a datetime and ending at another datetime."""
 
-    def __init__(
-            self,
-            start,
-            end
-    ):
+    def __init__(self, start, end):
         """Initialise a new TimeSpan object."""
         self.start = start
         self.end = end
@@ -45,13 +39,8 @@ class TimeSpan(yaml.YAMLObject):
     def __str__(self):
         """Return a string representation of this TimeSpan."""
         return (
-            "<{:s}"
-            + "({:%Y-%m-%dT%H:%M:%S.000Z}-{:%Y-%m-%dT%H:%M:%S.000Z})>"
-        ).format(
-            self.__class__.__name__,
-            self.start,
-            self.end
-        )
+            "<{:s}" + "({:%Y-%m-%dT%H:%M:%S.000Z}-{:%Y-%m-%dT%H:%M:%S.000Z})>"
+        ).format(self.__class__.__name__, self.start, self.end)
 
     def __repr__(self):
         """Represent this TimeSpan in readable form."""
@@ -94,10 +83,7 @@ class TimeSpan(yaml.YAMLObject):
 
     def __eq__(self, other):
         """Test if this TimeSpan and another one are equal."""
-        return (
-            self.start == other.start
-            and self.end == other.end
-        )
+        return self.start == other.start and self.end == other.end
 
     def __add__(self, other):
         """Add another TimeSpan to this one."""
@@ -118,10 +104,7 @@ class TimeSpan(yaml.YAMLObject):
             # then add one or two items to the merged list
             if last.end >= new.start:
                 merged.append(
-                    TimeSpan(
-                        min(last.start, new.start),
-                        max(last.end, new.end)
-                    )
+                    TimeSpan(min(last.start, new.start), max(last.end, new.end))
                 )
             else:
                 merged += [last, new]
@@ -146,17 +129,9 @@ class TimeSpan(yaml.YAMLObject):
         duration = self.duration / other
         for i in range(other - 1):
             pieces.append(
-                TimeSpan(
-                    self.start + i * duration,
-                    self.start + (i + 1) * duration
-                )
+                TimeSpan(self.start + i * duration, self.start + (i + 1) * duration)
             )
-        pieces.append(
-            TimeSpan(
-                self.start + (other - 1) * duration,
-                self.end
-            )
-        )
+        pieces.append(TimeSpan(self.start + (other - 1) * duration, self.end))
 
         return pieces
 
@@ -174,9 +149,5 @@ class TimeSpan(yaml.YAMLObject):
     def to_yaml(cls, dumper, data):
         """Map a TimeSpan object to its YAML representation."""
         return dumper.represent_mapping(
-            "!TimeSpan",
-            (
-                ("start", data.start),
-                ("end", data.end)
-            )
+            "!TimeSpan", (("start", data.start), ("end", data.end))
         )
