@@ -1,3 +1,6 @@
+- **0.2.1.dev0** (2024-01-08):
+    - migrate to Digital Geography Lab’s GitHub
+
 - **0.2.0** (2023-02-13):
     - server-side cursors for catching up missed data records
 

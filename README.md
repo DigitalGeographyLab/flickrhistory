@@ -21,15 +21,13 @@ The script is written in Python 3 and depends on the Python modules [blessed](ht
 
 ### Installation
 
-- Download the latest [release](https://gitlab.com/christoph.fink/flickrhistory/-/releases), and use `pip` to install *flickrhistory* and its dependencies:
-
 ```shell
-pip3 install flickrhistory-0.0.0.tar.gz
+pip install flickrhistory
 ```
 
 ### Configuration
 
-Copy the example configuration file [flickrhistory.yml.example](https://gitlab.com/christoph.fink/flickrhistory/-/raw/master/flickrhistory.yml.example) to a suitable location, depending on your operating system: 
+Copy the example configuration file [flickrhistory.yml.example](flickrhistory.yml.example) to a suitable location, depending on your operating system: 
 
 - on Linux systems:
     - system-wide configuration: `/etc/flickrhistory.yml`
