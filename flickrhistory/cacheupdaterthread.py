@@ -32,10 +32,7 @@ from .cache import Cache
 class CacheUpdaterThread(threading.Thread):
     """Wraps an ApiDownloader to run in a separate thread."""
 
-    def __init__(
-            self,
-            done_queue
-    ):
+    def __init__(self, done_queue):
         """
         Intialize a CacheUpdaterThread.
 

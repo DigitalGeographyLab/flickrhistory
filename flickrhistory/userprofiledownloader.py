@@ -50,7 +50,7 @@ class UserProfileDownloader:
             "method": "flickr.profile.getProfile",
             "format": "json",
             "nojsoncallback": 1,
-            "user_id": nsid
+            "user_id": nsid,
         }
 
         params = {}
@@ -59,10 +59,7 @@ class UserProfileDownloader:
             params.update(query)
 
         try:
-            with requests.get(
-                    self.API_ENDPOINT_URL,
-                    params=params
-            ) as response:
+            with requests.get(self.API_ENDPOINT_URL, params=params) as response:
                 results = response.json()
                 assert "profile" in results
 
@@ -79,10 +76,6 @@ class UserProfileDownloader:
         except AssertionError:
             # TODO: implement logging and report the response text + headers
             # if API hicups, return a stub data dict
-            results = {
-                "profile": {
-                    "id": nsid
-                }
-            }
+            results = {"profile": {"id": nsid}}
 
         return results["profile"]

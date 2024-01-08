@@ -47,7 +47,6 @@ class FancyFlickrHistoryDownloader(BasicFlickrHistoryDownloader):
         + "{t.normal}{t.blue}"
         + version
         + "{t.bold} ###"
-
         + "{t.normal}"
     )
 
@@ -55,16 +54,12 @@ class FancyFlickrHistoryDownloader(BasicFlickrHistoryDownloader):
         "{t.normal} Downloaded metadata for "
         + "{t.bold}{t.magenta}{photos: 9d} 📷 photos "
         + "{t.normal}{t.magenta}{photo_rate: 11.1f}/s\n"
-
         + "{t.normal} and updated             "
         + "{t.bold}{t.red}{profiles: 9d} 👱 user profiles "
         + "{t.normal}{t.red}{profile_rate: 3.1f}/s\n"
-
         + "{t.normal} using                   "
         + "{t.bold}{t.green}{workers: 9d} 💪 workers\n"
-
         + "{t.normal}{t.bold} TODO:                {todo: 12d} 🚧 time slots"
-
         + "{t.normal}"
     )
     STATUS_LINES = len(STATUS.splitlines())
@@ -76,7 +71,6 @@ class FancyFlickrHistoryDownloader(BasicFlickrHistoryDownloader):
         + "{t.normal}{t.magenta}{photo_rate: 11.1f}/s\n"
         + "{t.normal}and updated {t.bold}{t.red}{profiles: 9d} 👱 user profiles "
         + "{t.normal}{t.red}{profile_rate: 3.1f}/s\n"
-
         + "{t.normal}"
     )
 
@@ -108,7 +102,7 @@ class FancyFlickrHistoryDownloader(BasicFlickrHistoryDownloader):
                     profiles=profile_count,
                     profile_rate=profile_rate,
                     workers=(threading.active_count() - self.NUM_MANAGERS),
-                    todo=len(self._todo_deque)
+                    todo=len(self._todo_deque),
                 )
             )
 
@@ -136,6 +130,6 @@ class FancyFlickrHistoryDownloader(BasicFlickrHistoryDownloader):
                     photos=photo_count,
                     photo_rate=photo_rate,
                     profiles=profile_count,
-                    profile_rate=profile_rate
+                    profile_rate=profile_rate,
                 )
             )

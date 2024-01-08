@@ -49,13 +49,11 @@ class PhotoDownloader:
             "method": "flickr.photos.search",
             "format": "json",
             "nojsoncallback": 1,
-
             "per_page": 500,
             "has_geo": 1,
             "extras": ", ".join(
                 ["description", "date_upload", "date_taken", "geo", "owner_name"]
             ),
-
             "min_upload_date": self._timespan.start.timestamp(),
             "max_upload_date": self._timespan.end.timestamp(),
             "sort": "date-posted-asc",
@@ -71,10 +69,7 @@ class PhotoDownloader:
                 params.update(query)
 
                 try:
-                    with requests.get(
-                            self.API_ENDPOINT_URL,
-                            params=params
-                    ) as response:
+                    with requests.get(self.API_ENDPOINT_URL, params=params) as response:
                         results = response.json()
                 except (
                     ConnectionError,
@@ -91,9 +86,8 @@ class PhotoDownloader:
             except TypeError:
                 num_photos = 0
 
-            if (
-                    num_photos > 4000
-                    and self._timespan.duration > datetime.timedelta(seconds=1)
+            if num_photos > 4000 and self._timespan.duration > datetime.timedelta(
+                seconds=1
             ):
                 raise DownloadBatchIsTooLargeError(
                     (
@@ -103,14 +97,13 @@ class PhotoDownloader:
                 )
 
             for photo in results["photos"]["photo"]:
-
                 # the flickr API is matching date_posted very fuzzily,
                 # let’s not waste time with duplicates
                 if (
-                        datetime.datetime.fromtimestamp(
-                            int(photo["dateupload"]),
-                            tz=datetime.timezone.utc
-                        ) > self._timespan.end
+                    datetime.datetime.fromtimestamp(
+                        int(photo["dateupload"]), tz=datetime.timezone.utc
+                    )
+                    > self._timespan.end
                 ):
                     break
 

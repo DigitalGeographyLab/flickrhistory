@@ -19,10 +19,7 @@
 """Base classes to represent flickr posts and users."""
 
 
-__all__ = [
-    "FlickrPhoto",
-    "FlickrUser"
-]
+__all__ = ["FlickrPhoto", "FlickrUser"]
 
 
 import datetime
@@ -48,16 +45,14 @@ class FlickrUser(Base):
     id = sqlalchemy.Column(sqlalchemy.BigInteger)
     farm = sqlalchemy.Column(sqlalchemy.SmallInteger)
     nsid = sqlalchemy.Column(
-        sqlalchemy.Text,
-        sqlalchemy.Computed("id::TEXT || '@N0' || farm::TEXT")
+        sqlalchemy.Text, sqlalchemy.Computed("id::TEXT || '@N0' || farm::TEXT")
     )
 
     name = sqlalchemy.Column(sqlalchemy.Text)
     first_name = sqlalchemy.Column(sqlalchemy.Text)
     last_name = sqlalchemy.Column(sqlalchemy.Text)
     real_name = sqlalchemy.Column(
-        sqlalchemy.Text,
-        sqlalchemy.Computed("first_name || ' ' || last_name")
+        sqlalchemy.Text, sqlalchemy.Computed("first_name || ' ' || last_name")
     )
 
     city = sqlalchemy.Column(sqlalchemy.Text)
@@ -78,19 +73,13 @@ class FlickrUser(Base):
 
     photos = sqlalchemy.orm.relationship("FlickrPhoto", back_populates="user")
 
-    __table_args__ = (
-        sqlalchemy.PrimaryKeyConstraint("id", "farm"),
-    )
+    __table_args__ = (sqlalchemy.PrimaryKeyConstraint("id", "farm"),)
 
     @classmethod
     def from_raw_api_data_flickrphotossearch(cls, data):
         """Initialise a new FlickrUser with a flickr.photos.search data dict."""
         user_id, farm = data["owner"].split("@N0")
-        user_data = {
-            "id": user_id,
-            "farm": farm,
-            "name": data["ownername"]
-        }
+        user_data = {"id": user_id, "farm": farm, "name": data["ownername"]}
         return cls(**user_data)
 
     @classmethod
@@ -105,37 +94,28 @@ class FlickrUser(Base):
         # "joindate" needs special attentation
         try:
             join_date = datetime.datetime.fromtimestamp(
-                int(data["join_date"]),
-                tz=datetime.timezone.utc
+                int(data["join_date"]), tz=datetime.timezone.utc
             )
         except KeyError:
             join_date = None
 
-        user_data = {
-            "id": user_id,
-            "farm": farm,
-
-            "join_date": join_date
-        }
+        user_data = {"id": user_id, "farm": farm, "join_date": join_date}
 
         # all the other fields can be added as they are (if they exist)
         for field in [
             "first_name",
             "last_name",
-
             "city",
             "country",
             "hometown",
-
             "occupation",
             "description",
-
             "website",
             "facebook",
             "twitter",
             "tumblr",
             "instagram",
-            "pinterest"
+            "pinterest",
         ]:
             try:
                 user_data[field] = data[field]
@@ -174,7 +154,7 @@ class FlickrPhoto(Base):
         sqlalchemy.Computed(
             "'https://live.staticflickr.com/' || server::TEXT || '/' || "
             + "id::TEXT || '_' || encode(secret, 'hex') || '_z.jpg'"
-        )
+        ),
     )
     page_url = sqlalchemy.Column(
         sqlalchemy.Text,
@@ -182,7 +162,7 @@ class FlickrPhoto(Base):
             "'https://www.flickr.com/photos/' || "
             + "user_id::TEXT || '@N0' || user_farm::TEXT || '/' || "
             + "id::TEXT || '/'"
-        )
+        ),
     )
 
     geom = sqlalchemy.Column(geoalchemy2.Geometry("POINT", 4326))
@@ -194,9 +174,7 @@ class FlickrPhoto(Base):
 
     __table_args__ = (
         sqlalchemy.ForeignKeyConstraint(
-            ["user_id", "user_farm"],
-            ["users.id", "users.farm"],
-            "FlickrUser"
+            ["user_id", "user_farm"], ["users.id", "users.farm"], "FlickrUser"
         ),
     )
 
@@ -227,10 +205,7 @@ class FlickrPhoto(Base):
 
         try:
             photo_data["secret"] = bytes.fromhex(data["secret"])
-        except (
-            ValueError,  # some non-hex character
-            KeyError
-        ):
+        except (ValueError, KeyError):  # some non-hex character
             pass
 
         try:
@@ -259,8 +234,7 @@ class FlickrPhoto(Base):
 
         try:
             photo_data["date_posted"] = datetime.datetime.fromtimestamp(
-                int(data["dateupload"]),
-                tz=datetime.timezone.utc
+                int(data["dateupload"]), tz=datetime.timezone.utc
             )
         except KeyError:
             pass
@@ -271,13 +245,12 @@ class FlickrPhoto(Base):
             latitude = float(data["latitude"])
             assert longitude != 0 and latitude != 0
             photo_data["geom"] = "SRID=4326;POINT({longitude:f} {latitude:f})".format(
-                longitude=longitude,
-                latitude=latitude
+                longitude=longitude, latitude=latitude
             )
         except (
             AssertionError,  # lon/lat is at exactly 0°N/S, 0°W/E -> bogus
-            KeyError,        # not contained in API dict
-            TypeError        # weird data returned
+            KeyError,  # not contained in API dict
+            TypeError,  # weird data returned
         ):
             pass
 
