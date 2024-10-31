@@ -52,7 +52,7 @@ class PhotoDownloader:
             "per_page": 500,
             "has_geo": 1,
             "extras": ", ".join(
-                ["description", "date_upload", "date_taken", "geo", "owner_name"]
+                ["description", "date_upload", "date_taken", "geo", "owner_name", "tags", "license"]
             ),
             "min_upload_date": self._timespan.start.timestamp(),
             "max_upload_date": self._timespan.end.timestamp(),
