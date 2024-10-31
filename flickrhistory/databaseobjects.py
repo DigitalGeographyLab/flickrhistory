@@ -170,6 +170,10 @@ class FlickrPhoto(Base):
     user_id = sqlalchemy.Column(sqlalchemy.BigInteger, nullable=False)
     user_farm = sqlalchemy.Column(sqlalchemy.SmallInteger, nullable=False)
 
+    # New fields for tags and license
+    tags = sqlalchemy.Column(sqlalchemy.Text)
+    license = sqlalchemy.Column(sqlalchemy.Integer)
+
     user = sqlalchemy.orm.relationship("FlickrUser", back_populates="photos")
 
     __table_args__ = (
@@ -252,6 +256,16 @@ class FlickrPhoto(Base):
             KeyError,  # not contained in API dict
             TypeError,  # weird data returned
         ):
+            pass
+
+        try:
+            photo_data["tags"] = data["tags"]
+        except KeyError:
+            pass
+
+        try:
+            photo_data["license"] = int(data["license"])
+        except (ValueError, KeyError):
             pass
 
         # finally, the user
