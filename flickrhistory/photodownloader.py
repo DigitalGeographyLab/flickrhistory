@@ -86,12 +86,12 @@ class PhotoDownloader:
             except TypeError:
                 num_photos = 0
 
-            if num_photos > 4000 and self._timespan.duration > datetime.timedelta(
+            if num_photos > 3000 and self._timespan.duration > datetime.timedelta(
                 seconds=1
             ):
                 raise DownloadBatchIsTooLargeError(
                     (
-                        "More than 4000 rows returned ({:d}), "
+                        "More than 3000 rows returned ({:d}), "
                         + "please specify a shorter time span."
                     ).format(num_photos)
                 )
