@@ -83,7 +83,7 @@ class PhotoDownloader:
 
             try:
                 num_photos = int(results["photos"]["total"])
-            except TypeError:
+            except (TypeError, KeyError):
                 num_photos = 0
 
             if num_photos > 3000 and self._timespan.duration > datetime.timedelta(
