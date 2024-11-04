@@ -81,9 +81,13 @@ class PhotoDownloader:
                     # unsuccessful and start over
                     raise ApiResponseError() from exception
 
+            # Check for 'photos' in results to avoid KeyError
+            if "photos" not in results or "photo" not in results["photos"]:
+                break
+                
             try:
                 num_photos = int(results["photos"]["total"])
-            except (TypeError, KeyError):
+            except TypeError:
                 num_photos = 0
 
             if num_photos > 3000 and self._timespan.duration > datetime.timedelta(
