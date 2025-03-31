@@ -186,11 +186,16 @@ class FlickrPhoto(Base):
     @classmethod
     def from_raw_api_data_flickrphotossearch(cls, data):
         """Initialise a new FlickrPhoto with a flickr.photos.search data dict."""
+
         # Helper function to clean NUL characters
         def clean_string(input_string):
-            return input_string.replace('\x00', '') if isinstance(input_string, str) else input_string
+            return (
+                input_string.replace("\x00", "")
+                if isinstance(input_string, str)
+                else input_string
+            )
 
-	# the API does not always return all fields
+        # the API does not always return all fields
         # we need to figure out which ones we can use
 
         # and do quite a lot of clean-up because the flickr API
@@ -277,7 +282,6 @@ class FlickrPhoto(Base):
             photo_data["geo_accuracy"] = int(data["accuracy"])
         except (ValueError, KeyError):
             pass
-
 
         # finally, the user
         # (let’s just delegate that to the FlickrUser constructor)
