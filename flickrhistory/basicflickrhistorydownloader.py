@@ -45,7 +45,7 @@ from .userprofileupdaterthread import UserProfileUpdaterThread
 class BasicFlickrHistoryDownloader:
     """Download (all) georeferenced flickr posts."""
 
-    NUM_WORKERS = multiprocessing.cpu_count() + 1  # 1 == user_profile_updater
+    NUM_WORKERS = multiprocessing.cpu_count() + 4  # 1 == user_profile_updater
     NUM_MANAGERS = 2  # main thread + cache_updater
 
     # if output into pipe (e.g. logger, systemd), then

@@ -84,7 +84,7 @@ class PhotoDownloader:
             # Check for 'photos' in results to avoid KeyError
             if "photos" not in results or "photo" not in results["photos"]:
                 break
-                
+
             try:
                 num_photos = int(results["photos"]["total"])
             except TypeError:

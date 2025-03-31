@@ -173,6 +173,7 @@ class FlickrPhoto(Base):
     # New fields for tags and license
     tags = sqlalchemy.Column(sqlalchemy.Text)
     license = sqlalchemy.Column(sqlalchemy.Integer)
+    geo_accuracy = sqlalchemy.Column(sqlalchemy.Integer)
 
     user = sqlalchemy.orm.relationship("FlickrUser", back_populates="photos")
 
@@ -185,7 +186,11 @@ class FlickrPhoto(Base):
     @classmethod
     def from_raw_api_data_flickrphotossearch(cls, data):
         """Initialise a new FlickrPhoto with a flickr.photos.search data dict."""
-        # the API does not always return all fields
+        # Helper function to clean NUL characters
+        def clean_string(input_string):
+            return input_string.replace('\x00', '') if isinstance(input_string, str) else input_string
+
+	# the API does not always return all fields
         # we need to figure out which ones we can use
 
         # and do quite a lot of clean-up because the flickr API
@@ -213,12 +218,12 @@ class FlickrPhoto(Base):
             pass
 
         try:
-            photo_data["title"] = data["title"]
+            photo_data["title"] = clean_string(data["title"])
         except KeyError:
             pass
 
         try:
-            photo_data["description"] = data["description"]["_content"]
+            photo_data["description"] = clean_string(data["description"]["_content"])
         except KeyError:
             pass
 
@@ -259,7 +264,7 @@ class FlickrPhoto(Base):
             pass
 
         try:
-            photo_data["tags"] = data["tags"]
+            photo_data["tags"] = clean_string(data["tags"])
         except KeyError:
             pass
 
@@ -267,6 +272,12 @@ class FlickrPhoto(Base):
             photo_data["license"] = int(data["license"])
         except (ValueError, KeyError):
             pass
+
+        try:
+            photo_data["geo_accuracy"] = int(data["accuracy"])
+        except (ValueError, KeyError):
+            pass
+
 
         # finally, the user
         # (let’s just delegate that to the FlickrUser constructor)
