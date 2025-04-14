@@ -6,8 +6,6 @@
 
 
 __all__ = [
-    "FlickrPhoto",
-    "FlickrUser",
     "License",
     "Photo",
     "User",
@@ -19,11 +17,11 @@ import sqlalchemy
 
 from ..engine import engine
 from .base import Base
-from .database_schema_updater import DatabaseSchemaUpdater
+from ..databaseschemaupdater import DatabaseSchemaUpdater
 from .license import License
-from .photo import FlickrPhoto, Photo
+from .photo import Photo
 from .tag import Tag
-from .user import FlickrUser, User
+from .user import User
 
 
 if sqlalchemy.inspect(engine).has_table(Photo.__table__):  # data exists

@@ -19,12 +19,15 @@ with Config() as config:
 
 
 if engine.dialect.name == "postgresql":
-    engine.execute(
-        """
-        CREATE EXTENSION IF NOT EXISTS
-            postgis;
-    """
-    )
+    with engine.connect() as connection:
+        connection.execute(
+            sqlalchemy.text(
+                """
+                CREATE EXTENSION IF NOT EXISTS
+                    postgis;
+                """
+            )
+        )
 
 
 Session = sqlalchemy.orm.sessionmaker(engine, autoflush=False)
