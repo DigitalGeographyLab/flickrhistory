@@ -118,9 +118,10 @@ class UserProfileUpdaterThread(threading.Thread):
         while not (self.shutdown.is_set() or retries >= self.MAX_RETRIES):
             for nsid in self.nsids_of_users_without_detailed_information:
                 try:
-                    with sqlalchemy.orm.Session(
-                        self._engine
-                    ) as session, session.begin():
+                    with (
+                        sqlalchemy.orm.Session(self._engine) as session,
+                        session.begin(),
+                    ):
                         flickr_user = (
                             FlickrUser.from_raw_api_data_flickrprofilegetprofile(
                                 user_profile_downloader.get_profile_for_nsid(nsid)
