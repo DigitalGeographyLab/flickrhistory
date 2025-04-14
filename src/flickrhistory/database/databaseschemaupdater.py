@@ -20,7 +20,22 @@ from .engine import engine
 SCHEMA_UPDATES = {
     # 0 -> 1
     1: """
-        CREATE TABLE bliblably;
+        ALTER TABLE
+            photos
+        ADD COLUMN
+            geo_accuracy SMALLINT;
+
+        CREATE TABLE
+            licenses (
+                id INTEGER,
+                name TEXT,
+                url TEXT
+            );
+
+        ALTER TABLE
+            photos
+        ADD COLUMN 
+            license INTEGER REFERENCES licenses(id);
     """,
 }
 

@@ -17,7 +17,7 @@ from .base import Base
 class License(Base):
     """ORM class to represent a flickr license."""
 
-    id = sqlalchemy.Column(sqlalchemy.Text, primary_key=True)
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     name = sqlalchemy.Column(sqlalchemy.Text)
     url = sqlalchemy.Column(sqlalchemy.Text)
     photos = sqlalchemy.orm.relationship("Photo")
