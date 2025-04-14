@@ -29,7 +29,7 @@ import time
 import sqlalchemy
 
 from .config import Config
-from .databaseobjects import FlickrUser
+from .database.models import User
 from .exceptions import ApiResponseError
 from .userprofiledownloader import UserProfileDownloader
 
@@ -83,26 +83,26 @@ class UserProfileUpdaterThread(threading.Thread):
         with sqlalchemy.orm.Session(self._engine) as session:
             if self._bounds is None:
                 nsids_of_users_without_detailed_information = session.query(
-                    FlickrUser.nsid
+                    User.nsid
                 ).filter_by(join_date=None)
             else:
                 bounds = (
                     sqlalchemy.select(
                         sqlalchemy.sql.functions.percentile_disc(self._bounds[0])
-                        .within_group(FlickrUser.id)
+                        .within_group(User.id)
                         .label("lower"),
                         sqlalchemy.sql.functions.percentile_disc(self._bounds[1])
-                        .within_group(FlickrUser.id)
+                        .within_group(User.id)
                         .label("upper"),
                     )
-                    .select_from(FlickrUser)
+                    .select_from(User)
                     .filter_by(join_date=None)
                     .cte()
                 )
                 nsids_of_users_without_detailed_information = (
-                    session.query(FlickrUser.nsid)
+                    session.query(User.nsid)
                     .filter_by(join_date=None)
-                    .where(FlickrUser.id.between(bounds.c.lower, bounds.c.upper))
+                    .where(User.id.between(bounds.c.lower, bounds.c.upper))
                     .yield_per(1000)
                 )
 
@@ -122,10 +122,8 @@ class UserProfileUpdaterThread(threading.Thread):
                         sqlalchemy.orm.Session(self._engine) as session,
                         session.begin(),
                     ):
-                        flickr_user = (
-                            FlickrUser.from_raw_api_data_flickrprofilegetprofile(
-                                user_profile_downloader.get_profile_for_nsid(nsid)
-                            )
+                        flickr_user = User.from_raw_api_data_flickrprofilegetprofile(
+                            user_profile_downloader.get_profile_for_nsid(nsid)
                         )
                         session.merge(flickr_user)
 

@@ -1,21 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-#   Copyright (C) 2020 Christoph Fink, University of Helsinki
-#
-#   This program is free software; you can redistribute it and/or
-#   modify it under the terms of the GNU General Public License
-#   as published by the Free Software Foundation; either version 3
-#   of the License, or (at your option) any later version.
-#
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
-#
-#   You should have received a copy of the GNU General Public License
-#   along with this program; if not, see <http://www.gnu.org/licenses/>.
-
 
 """Worker threads wrapping an APIDownloader."""
 
@@ -24,12 +9,8 @@ __all__ = ["PhotoDownloaderThread"]
 
 
 import threading
-import time
 
-import sqlalchemy
-
-from .config import Config
-from .databaseobjects import FlickrPhoto
+from .database import PhotoSaver
 from .exceptions import ApiResponseError, DownloadBatchIsTooLargeError
 from .photodownloader import PhotoDownloader
 
@@ -59,11 +40,6 @@ class PhotoDownloaderThread(threading.Thread):
 
         self.shutdown = threading.Event()
 
-        with Config() as config:
-            self._engine = sqlalchemy.create_engine(
-                config["database_connection_string"]
-            )
-
     def run(self):
         """Get TimeSpans off todo_deque and download photos."""
         while not self.shutdown.is_set():
@@ -76,34 +52,14 @@ class PhotoDownloaderThread(threading.Thread):
 
             try:
                 for photo in photo_downloader.photos:
-                    with sqlalchemy.orm.Session(self._engine) as session:
-                        try:
-                            with session.begin():
-                                flickr_photo = (
-                                    FlickrPhoto.from_raw_api_data_flickrphotossearch(
-                                        photo
-                                    )
-                                )
-                                session.merge(flickr_photo)
-                        except sqlalchemy.exc.IntegrityError:
-                            # remedy race conditions
-                            # TODO: find out how to avoid them
-                            time.sleep(1.0)
-                            with session.begin():
-                                session.flush()
-                                flickr_photo = (
-                                    FlickrPhoto.from_raw_api_data_flickrphotossearch(
-                                        photo
-                                    )
-                                )
-                                session.merge(flickr_photo)
+                    PhotoSaver().save(photo)
 
                     self.count += 1
 
                     if self.shutdown.is_set():
                         # let’s only report back on how much we
                         # in fact downloaded, not what our quota was
-                        timespan.end = flickr_photo.date_posted
+                        timespan.end = photo.date_posted
                         break
 
             except ApiResponseError:

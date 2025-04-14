@@ -36,6 +36,7 @@ from .apikeymanager import ApiKeyManager
 from .cache import Cache
 from .cacheupdaterthread import CacheUpdaterThread
 from .config import Config
+from .licensedownloader import LicenseDownloader
 from .photodownloaderthread import PhotoDownloaderThread
 from .sigtermreceivedexception import SigTermReceivedException
 from .timespan import TimeSpan
@@ -69,6 +70,8 @@ class BasicFlickrHistoryDownloader:
 
     def download(self):
         """Download all georeferenced flickr posts."""
+        LicenseDownloader(self._api_key_manager).update_licenses()
+
         for gap in self.gaps_in_download_history:
             self._todo_deque.append(gap)
 
