@@ -186,15 +186,6 @@ class FlickrPhoto(Base):
     @classmethod
     def from_raw_api_data_flickrphotossearch(cls, data):
         """Initialise a new FlickrPhoto with a flickr.photos.search data dict."""
-
-        # Helper function to clean NUL characters
-        def clean_string(input_string):
-            return (
-                input_string.replace("\x00", "")
-                if isinstance(input_string, str)
-                else input_string
-            )
-
         # the API does not always return all fields
         # we need to figure out which ones we can use
 
@@ -223,12 +214,12 @@ class FlickrPhoto(Base):
             pass
 
         try:
-            photo_data["title"] = clean_string(data["title"])
+            photo_data["title"] = data["title"].replace("\x00", "")
         except KeyError:
             pass
 
         try:
-            photo_data["description"] = clean_string(data["description"]["_content"])
+            photo_data["description"] = data["description"]["_content"].replace("\x00", "")
         except KeyError:
             pass
 
@@ -269,7 +260,7 @@ class FlickrPhoto(Base):
             pass
 
         try:
-            photo_data["tags"] = clean_string(data["tags"])
+            photo_data["tags"] = data["tags"].replace("\x00", "")
         except KeyError:
             pass
 
