@@ -214,12 +214,12 @@ class FlickrPhoto(Base):
             pass
 
         try:
-            photo_data["title"] = data["title"].replace("\x00", "")
+            photo_data["title"] = data["title"]
         except KeyError:
             pass
 
         try:
-            photo_data["description"] = data["description"]["_content"].replace("\x00", "")
+            photo_data["description"] = data["description"]["_content"]
         except KeyError:
             pass
 
@@ -260,7 +260,7 @@ class FlickrPhoto(Base):
             pass
 
         try:
-            photo_data["tags"] = data["tags"].replace("\x00", "")
+            photo_data["tags"] = data["tags"]
         except KeyError:
             pass
 
@@ -279,6 +279,10 @@ class FlickrPhoto(Base):
         photo_data["user"] = FlickrUser.from_raw_api_data_flickrphotossearch(data)
 
         return cls(**photo_data)
+
+    @sqlalchemy.orm.validates("title", "description", "tags")
+    def _drop_nul_from_strings(self, key, address):
+        return address.replace("\x00", "")
 
     def __str__(self):
         """Return a str representation."""
