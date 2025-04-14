@@ -5,11 +5,10 @@
 """ORM class to represent a flickr user."""
 
 
-__all__ = ["FlickrUser", "User"]
+__all__ = ["User"]
 
 
 import datetime
-import warnings
 
 import sqlalchemy
 import sqlalchemy.orm
@@ -101,11 +100,3 @@ class User(Base):
                 pass
 
         return cls(**user_data)
-
-
-# @warnings.deprecated(
-#     "FlickrUser has been deprecated, use flickrhistory.database.models.User instead."
-# )
-# class FlickrUser:
-#     def __new__(cls, *args, **kwargs):
-#         return User(*args, **kwargs)

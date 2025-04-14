@@ -9,7 +9,9 @@ __all__ = [
     "Photo",
     "PhotoSaver",
     "User",
+    "UserSaver",
 ]
 
 from .models import License, Photo, User
 from .photo_saver import PhotoSaver
+from .user_saver import UserSaver

@@ -6,12 +6,9 @@
 
 
 __all__ = [
-    "FlickrPhoto",
     "Photo",
 ]
 
-
-import warnings
 
 import geoalchemy2
 import sqlalchemy
@@ -80,11 +77,3 @@ class Photo(Base):
     @sqlalchemy.orm.validates("title", "description", "tags")
     def _drop_nul_from_strings(self, key, address):
         return address.replace("\x00", "")
-
-
-# @warnings.deprecated(
-#     "FlickrPhoto has been deprecated, use flickrhistory.database.models.Photo instead."
-# )
-# class FlickrPhoto:
-#     def __new__(cls, *args, **kwargs):
-#         return Photo(*args, **kwargs)

@@ -1,21 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-#   Copyright (C) 2020 Christoph Fink, University of Helsinki
-#
-#   This program is free software; you can redistribute it and/or
-#   modify it under the terms of the GNU General Public License
-#   as published by the Free Software Foundation; either version 3
-#   of the License, or (at your option) any later version.
-#
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
-#
-#   You should have received a copy of the GNU General Public License
-#   along with this program; if not, see <http://www.gnu.org/licenses/>.
-
 
 """Thread to complete missing data on user profiles."""
 
@@ -29,7 +14,7 @@ import time
 import sqlalchemy
 
 from .config import Config
-from .database.models import User
+from .database import User, UserSaver
 from .exceptions import ApiResponseError
 from .userprofiledownloader import UserProfileDownloader
 
@@ -118,15 +103,7 @@ class UserProfileUpdaterThread(threading.Thread):
         while not (self.shutdown.is_set() or retries >= self.MAX_RETRIES):
             for nsid in self.nsids_of_users_without_detailed_information:
                 try:
-                    with (
-                        sqlalchemy.orm.Session(self._engine) as session,
-                        session.begin(),
-                    ):
-                        flickr_user = User.from_raw_api_data_flickrprofilegetprofile(
-                            user_profile_downloader.get_profile_for_nsid(nsid)
-                        )
-                        session.merge(flickr_user)
-
+                    UserSaver().save(user_profile_downloader.get_profile_for_nsid(nsid))
                     self.count += 1
 
                 except ApiResponseError:

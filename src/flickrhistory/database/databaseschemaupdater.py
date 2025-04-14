@@ -34,7 +34,7 @@ SCHEMA_UPDATES = {
 
         ALTER TABLE
             photos
-        ADD COLUMN 
+        ADD COLUMN
             license INTEGER REFERENCES licenses(id);
     """,
 }
