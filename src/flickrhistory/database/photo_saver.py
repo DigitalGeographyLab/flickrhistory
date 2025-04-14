@@ -94,7 +94,7 @@ class PhotoSaver:
         ):
             pass
 
-        photo_data["geographical_accuracy"] = int(data["accuracy"])
+        photo_data["geo_accuracy"] = int(data["accuracy"])
 
         license = int(data["license"])
 

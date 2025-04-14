@@ -51,7 +51,7 @@ class Photo(Base):
     )
 
     geom = sqlalchemy.Column(geoalchemy2.Geometry("POINT", 4326))
-    geographic_accuracy = sqlalchemy.Column(sqlalchemy.SmallInteger)
+    geo_accuracy = sqlalchemy.Column(sqlalchemy.SmallInteger)
 
     user_id = sqlalchemy.Column(sqlalchemy.BigInteger, nullable=False)
     user_farm = sqlalchemy.Column(sqlalchemy.SmallInteger, nullable=False)
@@ -61,8 +61,13 @@ class Photo(Base):
         secondary="tag_photo_associations",
         back_populates="photos",
     )
-    license = sqlalchemy.Column(sqlalchemy.Integer)
-    geo_accuracy = sqlalchemy.Column(sqlalchemy.Integer)
+
+    license_id = sqlalchemy.Column(
+        sqlalchemy.Integer,
+        sqlalchemy.ForeignKey("licenses.id"),
+        index=True,
+    )
+    license = sqlalchemy.orm.relationship("License", back_populates="photos")
 
     user = sqlalchemy.orm.relationship("User", back_populates="photos")
 
