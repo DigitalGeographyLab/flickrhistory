@@ -17,6 +17,10 @@ import urllib3
 from .exceptions import ApiResponseError, DownloadBatchIsTooLargeError
 
 
+MAX_PHOTOS_PER_BATCH = 3000
+ONE_SECOND = datetime.timedelta(seconds=1)
+
+
 class PhotoDownloader:
     """Download all data covering a time span from the flickr API."""
 
@@ -37,7 +41,15 @@ class PhotoDownloader:
             "per_page": 500,
             "has_geo": 1,
             "extras": ", ".join(
-                ["description", "date_upload", "date_taken", "geo", "owner_name"]
+                [
+                    "description",
+                    "date_upload",
+                    "date_taken",
+                    "geo",
+                    "owner_name",
+                    "tags",
+                    "license",
+                ]
             ),
             "min_upload_date": self._timespan.start.timestamp(),
             "max_upload_date": self._timespan.end.timestamp(),
@@ -67,30 +79,35 @@ class PhotoDownloader:
                     raise ApiResponseError() from exception
 
             try:
-                num_photos = int(results["photos"]["total"])
-            except TypeError:
-                num_photos = 0
+                try:
+                    num_photos = int(results["photos"]["total"])
+                except TypeError:
+                    num_photos = 0
 
-            if num_photos > 4000 and self._timespan.duration > datetime.timedelta(
-                seconds=1
-            ):
-                raise DownloadBatchIsTooLargeError(
-                    f"More than 4000 rows returned ({num_photos}), "
-                    "please specify a shorter time span."
-                )
-
-            for photo in results["photos"]["photo"]:
-                # the flickr API is matching date_posted very fuzzily,
-                # let’s not waste time with duplicates
                 if (
-                    datetime.datetime.fromtimestamp(
-                        int(photo["dateupload"]), tz=datetime.timezone.utc
-                    )
-                    > self._timespan.end
+                    num_photos > MAX_PHOTOS_PER_BATCH
+                    and self._timespan.duration > ONE_SECOND
                 ):
-                    break
+                    raise DownloadBatchIsTooLargeError(
+                        f"More than {MAX_PHOTOS_PER_BATCH} rows returned ({num_photos}), "
+                        "please specify a shorter time span."
+                    )
 
-                yield photo
+                for photo in results["photos"]["photo"]:
+                    # the flickr API is matching date_posted very fuzzily,
+                    # let’s not waste time with duplicates
+                    if (
+                        datetime.datetime.fromtimestamp(
+                            int(photo["dateupload"]), tz=datetime.timezone.utc
+                        )
+                        > self._timespan.end
+                    ):
+                        continue
+
+                    yield photo
+
+            except KeyError:
+                pass  # moving on to next page, if exists
 
             page += 1
             if page > int(results["photos"]["pages"]):

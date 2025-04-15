@@ -1,3 +1,10 @@
+- **0.3.0** (2025-04-15):
+    - now collecting more data: tags, license, geo-accuracy
+    - re-downloading these data for existing records
+    - database schema versioning
+    - moved to PyPi TrustedPublisher auth
+    - migrated to pyproject.toml-only style
+
 - **0.2.1** (2024-01-08):
     - migrate to Digital Geography Lab’s GitHub
 

@@ -21,7 +21,9 @@ from .apikeymanager import ApiKeyManager
 from .cache import Cache
 from .cacheupdaterthread import CacheUpdaterThread
 from .config import Config
+from .licensedownloader import LicenseDownloader
 from .photodownloaderthread import PhotoDownloaderThread
+from .photoupdaterthread import PhotoUpdaterThread
 from .sigtermreceivedexception import SigTermReceivedException
 from .timespan import TimeSpan
 from .userprofileupdaterthread import UserProfileUpdaterThread
@@ -30,7 +32,7 @@ from .userprofileupdaterthread import UserProfileUpdaterThread
 class BasicFlickrHistoryDownloader:
     """Download (all) georeferenced flickr posts."""
 
-    NUM_WORKERS = multiprocessing.cpu_count() + 1  # 1 == user_profile_updater
+    NUM_WORKERS = multiprocessing.cpu_count()
     NUM_MANAGERS = 2  # main thread + cache_updater
 
     # if output into pipe (e.g. logger, systemd), then
@@ -54,6 +56,8 @@ class BasicFlickrHistoryDownloader:
 
     def download(self):
         """Download all georeferenced flickr posts."""
+        LicenseDownloader(self._api_key_manager).update_licenses()
+
         for gap in self.gaps_in_download_history:
             self._todo_deque.append(gap)
 
@@ -69,6 +73,14 @@ class BasicFlickrHistoryDownloader:
             # start user profile updaters
             for i in range(self.NUM_WORKERS):
                 worker = UserProfileUpdaterThread(
+                    self._api_key_manager, (i + 1, self.NUM_WORKERS)
+                )
+                worker.start()
+                self._worker_threads.append(worker)
+
+            # start photo record updaters
+            for i in range(self.NUM_WORKERS):
+                worker = PhotoUpdaterThread(
                     self._api_key_manager, (i + 1, self.NUM_WORKERS)
                 )
                 worker.start()
