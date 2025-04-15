@@ -18,6 +18,7 @@ from .exceptions import ApiResponseError, DownloadBatchIsTooLargeError
 
 
 MAX_PHOTOS_PER_BATCH = 3000
+ONE_SECOND = datetime.timedelta(seconds=1)
 
 
 class PhotoDownloader:
@@ -83,8 +84,9 @@ class PhotoDownloader:
                 except TypeError:
                     num_photos = 0
 
-                if num_photos > MAX_PHOTOS_PER_BATCH and self._timespan.duration > datetime.timedelta(
-                    seconds=1
+                if (
+                    num_photos > MAX_PHOTOS_PER_BATCH
+                    and self._timespan.duration > ONE_SECOND
                 ):
                     raise DownloadBatchIsTooLargeError(
                         f"More than {MAX_PHOTOS_PER_BATCH} rows returned ({num_photos}), "
@@ -100,7 +102,7 @@ class PhotoDownloader:
                         )
                         > self._timespan.end
                     ):
-                        break
+                        continue
 
                     yield photo
 
