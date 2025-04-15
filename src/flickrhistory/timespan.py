@@ -24,8 +24,10 @@ class TimeSpan(yaml.YAMLObject):
     def __str__(self):
         """Return a string representation of this TimeSpan."""
         return (
-            "<{:s}" + "({:%Y-%m-%dT%H:%M:%S.000Z}-{:%Y-%m-%dT%H:%M:%S.000Z})>"
-        ).format(self.__class__.__name__, self.start, self.end)
+            f"<{self.__class__.__name__}"
+            f"({self.start:%Y-%m-%dT%H:%M:%S.000Z}"
+            f"-{self.end:%Y-%m-%dT%H:%M:%S.000Z})>"
+        )
 
     def __repr__(self):
         """Represent this TimeSpan in readable form."""

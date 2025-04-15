@@ -99,15 +99,10 @@ class BasicFlickrHistoryDownloader:
         photo_count, _, profile_count, _ = self._statistics
         print(
             (
-                "Downloaded metadata for {photos: 6d} photos "
-                + "and {profiles: 4d} user profiles "
-                + "using {workers:d} workers, "
-                + "{todo:d} time slots to cover"
-            ).format(
-                photos=photo_count,
-                profiles=profile_count,
-                workers=(threading.active_count() - self.NUM_MANAGERS),
-                todo=len(self._todo_deque),
+                f"Downloaded metadata for {photo_count: 6d} photos "
+                f"and {profile_count: 4d} user profiles "
+                f"using {(threading.active_count() - self.NUM_MANAGERS)} workers, "
+                f"{len(self._todo_deque)} time slots to cover"
             ),
             file=sys.stderr,
             end=self.STATUS_UPDATE_LINE_END,
@@ -131,9 +126,7 @@ class BasicFlickrHistoryDownloader:
         """
         photo_count, _, profile_count, _ = self._statistics
         print(
-            ("Downloaded {photos:d} photos " + "and {profiles:d} user profiles").format(
-                photos=photo_count, profiles=profile_count
-            ),
+            f"Downloaded {photo_count} photos and {profile_count} user profiles",
             file=sys.stderr,
         )
 
