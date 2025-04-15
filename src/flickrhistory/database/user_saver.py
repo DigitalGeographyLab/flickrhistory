@@ -62,4 +62,6 @@ class UserSaver:
             user = session.merge(user)
             user.update(**user_data)
 
+            session.flush()
+            session.expunge(user)
         return user

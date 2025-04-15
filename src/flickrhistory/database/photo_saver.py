@@ -116,7 +116,8 @@ class PhotoSaver:
             license = session.merge(
                 session.get(License, license) or License(id=license)
             )
-            session.flush()
             photo.license = license
 
+            session.flush()
+            session.expunge(photo)
         return photo

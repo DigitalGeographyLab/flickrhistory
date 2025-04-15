@@ -8,14 +8,23 @@
 __all__ = ["engine", "Session"]
 
 
+import multiprocessing
+
 import sqlalchemy
 import sqlalchemy.orm
 
 from ..config import Config
 
 
+POOL_SIZE = multiprocessing.cpu_count()
+
+
 with Config() as config:
-    engine = sqlalchemy.create_engine(config["database_connection_string"])
+    engine = sqlalchemy.create_engine(
+        config["database_connection_string"],
+        pool_size=POOL_SIZE,
+        max_overflow=POOL_SIZE,
+    )
 
 
 if engine.dialect.name == "postgresql":
