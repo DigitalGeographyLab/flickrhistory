@@ -37,13 +37,13 @@ class Base:
                 primary_keys[pk.name] = getattr(self, pk.name)
             except AttributeError:  # (not yet set)
                 pass
-        return "{}({})".format(self.__class__.__name__, json.dumps(primary_keys))
+        return f"<{self.__class__.__name__}({json.dumps(primary_keys)})>"
 
     @sqlalchemy.orm.declared_attr
     def __tablename__(cls):
         """Return a table name derived from the class name."""
         snake_case = camel_case_to_snake_case(cls.__name__)
-        return "{:s}s".format(snake_case)
+        return f"{snake_case}s"
 
     def update(self, **kwargs):
         """Update the values of this ORM object from keyword arguments."""

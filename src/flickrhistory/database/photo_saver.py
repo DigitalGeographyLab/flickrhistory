@@ -84,9 +84,7 @@ class PhotoSaver:
             longitude = float(data["longitude"])
             latitude = float(data["latitude"])
             assert longitude != 0 and latitude != 0
-            photo_data["geom"] = "SRID=4326;POINT({longitude:f} {latitude:f})".format(
-                longitude=longitude, latitude=latitude
-            )
+            photo_data["geom"] = f"SRID=4326;POINT({longitude:f} {latitude:f})"
         except (
             AssertionError,  # lon/lat is at exactly 0°N/S, 0°W/E -> bogus
             KeyError,  # not contained in API dict
