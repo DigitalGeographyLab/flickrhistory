@@ -17,6 +17,9 @@ import urllib3
 from .exceptions import ApiResponseError, DownloadBatchIsTooLargeError
 
 
+MAX_PHOTOS_PER_BATCH = 3000
+
+
 class PhotoDownloader:
     """Download all data covering a time span from the flickr API."""
 
@@ -80,14 +83,12 @@ class PhotoDownloader:
                 except TypeError:
                     num_photos = 0
 
-                if num_photos > 3000 and self._timespan.duration > datetime.timedelta(
+                if num_photos > MAX_PHOTOS_PER_BATCH and self._timespan.duration > datetime.timedelta(
                     seconds=1
                 ):
                     raise DownloadBatchIsTooLargeError(
-                        (
-                            "More than 3000 rows returned ({:d}), "
-                            + "please specify a shorter time span."
-                        ).format(num_photos)
+                        f"More than {MAX_PHOTOS_PER_BATCH} rows returned ({num_photos}), "
+                        "please specify a shorter time span."
                     )
 
                 for photo in results["photos"]["photo"]:
