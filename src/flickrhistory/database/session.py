@@ -28,7 +28,7 @@ class Session:
     _sessionmaker = None
 
     def __new__(cls, *args, **kwargs):
-        """An sqlachemy.Session."""
+        """Return an sqlachemy.Session."""
         if cls._sessionmaker is None:
             with Config() as config:
                 engine = sqlalchemy.create_engine(
