@@ -246,7 +246,7 @@ class FlickrPhoto(Base):
 
     def __str__(self):
         """Return a str representation."""
-        return "<FlickrPhoto({:s})>".format(self.id)
+        return f"<FlickrPhoto({self.id})>"
 
     def __repr(self):
         """Return a str representation."""
