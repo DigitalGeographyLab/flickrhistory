@@ -13,7 +13,7 @@ __all__ = [
     "UserSaver",
 ]
 
-from .engine import Session
 from .models import License, Photo, User
 from .photo_saver import PhotoSaver
+from .session import Session
 from .user_saver import UserSaver

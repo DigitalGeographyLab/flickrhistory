@@ -12,7 +12,7 @@ import sys
 
 import sqlalchemy
 
-from .engine import engine
+from ..config import Config
 
 
 # for now, schema updates are SQL only and work on PostgreSQL, only.
@@ -48,7 +48,9 @@ class DatabaseSchemaUpdater:
     def __init__(self):
         """Update the database schema if necessary."""
         # Try to create database table for schema version
-        with engine.begin() as connection:
+        with Config() as config:
+            self.engine = sqlalchemy.create_engine(config["database_connection_string"])
+        with self.engine.begin() as connection:
             connection.execute(
                 sqlalchemy.text(
                     """
@@ -65,7 +67,7 @@ class DatabaseSchemaUpdater:
     @property
     def installed_version(self):
         """Return current version."""
-        with engine.connect() as connection:
+        with self.engine.connect() as connection:
             installed_version = connection.execute(
                 sqlalchemy.text(
                     """
@@ -92,18 +94,17 @@ class DatabaseSchemaUpdater:
                 file=sys.stderr,
                 flush=True,  # so that we don’t seem without work
             )
-            with engine.begin() as connection:
+            with self.engine.connect() as connection:
                 next_version = self.installed_version + 1
                 connection.execute(sqlalchemy.text(SCHEMA_UPDATES[next_version]))
                 self.set_schema_version(next_version)
             installed_version = self.installed_version
 
-    @classmethod
-    def set_schema_version(cls, version):
+    def set_schema_version(self, version):
         """Set the schema version (without running update scripts)."""
-        if version == cls.LATEST:
+        if version == self.LATEST:
             version = max(SCHEMA_UPDATES.keys())
-        with engine.begin() as connection:
+        with self.engine.begin() as connection:
             connection.execute(
                 sqlalchemy.text(
                     """
