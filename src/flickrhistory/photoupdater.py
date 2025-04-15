@@ -51,10 +51,11 @@ class PhotoUpdater:
 
                 data = {
                     "id": photo_id,
-                    "tags": " ".join([tag["_content"] for tag in results["photo"]["tags"]["tag"]]),
+                    "tags": " ".join(
+                        [tag["_content"] for tag in results["photo"]["tags"]["tag"]]
+                    ),
                     "license": int(results["photo"]["license"]),
                     "accuracy": int(results["photo"]["location"]["accuracy"]),
-
                     "owner": results["photo"]["owner"]["nsid"],
                     "ownername": results["photo"]["owner"]["realname"],
                 }

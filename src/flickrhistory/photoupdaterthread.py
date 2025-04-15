@@ -21,6 +21,7 @@ from .photoupdater import PhotoUpdater
 
 class PhotoUpdaterThread(threading.Thread):
     """Finds incomplete photos and downloads missing data from the flickr API."""
+
     def __init__(self, api_key_manager, partition=None):
         """
         Intialize a PhotoUpdaterThread.

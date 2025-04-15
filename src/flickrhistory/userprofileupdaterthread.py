@@ -21,6 +21,7 @@ from .userprofiledownloader import UserProfileDownloader
 
 class UserProfileUpdaterThread(threading.Thread):
     """Finds incomplete user profiles and downloads missing data from the flickr API."""
+
     def __init__(self, api_key_manager, partition=None):
         """
         Intialize a UserProfileUpdateThread.
