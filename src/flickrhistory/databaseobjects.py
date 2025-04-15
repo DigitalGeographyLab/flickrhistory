@@ -112,7 +112,7 @@ class FlickrUser(Base):
 
     def __str__(self):
         """Return a str representation."""
-        return "<FlickrUser({:s}@N0{:s})>".format(self.id, self.farm)
+        return f"<FlickrUser({self.id}@N0{self.farm})>"
 
     def __repr(self):
         """Return a str representation."""
@@ -230,9 +230,7 @@ class FlickrPhoto(Base):
             longitude = float(data["longitude"])
             latitude = float(data["latitude"])
             assert longitude != 0 and latitude != 0
-            photo_data["geom"] = "SRID=4326;POINT({longitude:f} {latitude:f})".format(
-                longitude=longitude, latitude=latitude
-            )
+            photo_data["geom"] = f"SRID=4326;POINT({longitude:f} {latitude:f})"
         except (
             AssertionError,  # lon/lat is at exactly 0°N/S, 0°W/E -> bogus
             KeyError,  # not contained in API dict
@@ -248,7 +246,7 @@ class FlickrPhoto(Base):
 
     def __str__(self):
         """Return a str representation."""
-        return "<FlickrPhoto({:s})>".format(self.id)
+        return f"<FlickrPhoto({self.id})>"
 
     def __repr(self):
         """Return a str representation."""

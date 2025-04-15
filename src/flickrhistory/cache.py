@@ -46,7 +46,7 @@ class Cache:
                     or os.environ.get("XDG_CACHE_HOME")
                     or os.path.join(os.environ["HOME"], ".cache")
                 ),
-                "{:s}.yml".format(cache_file_basename),
+                f"{cache_file_basename}.yml",
             )
         )
 
@@ -63,9 +63,7 @@ class Cache:
             pass
 
         if cache == {}:
-            warnings.warn(
-                "No cache found in file {}, starting empty".format(self._cache_file)
-            )
+            warnings.warn(f"No cache found in file {self._cache_file}, starting empty")
 
         return cache
 
@@ -77,7 +75,7 @@ class Cache:
                 Dumper=YamlNoAliasDumper,
             )
         except PermissionError:
-            warnings.warn("Could not write cache to {}".format(self._cache_file))
+            warnings.warn(f"Could not write cache to {self._cache_file}")
 
     def __getitem__(self, pos):
         """Retrieve a cache entry."""
