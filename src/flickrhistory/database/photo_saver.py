@@ -8,7 +8,7 @@
 import datetime
 
 from .models import License, Photo, Tag
-from .engine import Session
+from .session import Session
 from .user_saver import UserSaver
 
 

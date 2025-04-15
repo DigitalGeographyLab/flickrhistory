@@ -8,7 +8,7 @@
 import datetime
 
 from .models import User
-from .engine import Session
+from .session import Session
 
 
 __all__ = ["UserSaver"]
