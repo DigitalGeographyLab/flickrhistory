@@ -61,7 +61,7 @@ class Config:
             config_files_basename = self.__module__.split(".")[0]
 
             config_files = [
-                "/etc/{:s}.yml".format(config_files_basename),
+                f"/etc/{config_files_basename}.yml",
                 os.path.abspath(
                     os.path.join(
                         (
@@ -69,7 +69,7 @@ class Config:
                             or os.environ.get("XDG_CONFIG_HOME")
                             or os.path.join(os.environ["HOME"], ".config")
                         ),
-                        "{:s}.yml".format(config_files_basename),
+                        f"{config_files_basename}.yml",
                     )
                 ),
             ]
@@ -81,9 +81,7 @@ class Config:
                 pass
 
         if config == {}:
-            warnings.warn(
-                "No configuration found in files {}.".format(",".join(config_files))
-            )
+            warnings.warn(f"No configuration found in files {', '.join(config_files)}.")
 
         return config
 

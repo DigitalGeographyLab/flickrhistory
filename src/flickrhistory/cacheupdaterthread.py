@@ -39,7 +39,7 @@ class CacheUpdaterThread(threading.Thread):
                         cache["already downloaded"] += newly_downloaded
                     except KeyError:
                         cache["already downloaded"] = newly_downloaded
-                    self.status = "added {}".format(newly_downloaded)
+                    self.status = f"added {newly_downloaded}"
             except queue.Empty:
                 if self.shutdown.is_set():
                     break
