@@ -74,37 +74,37 @@ class PhotoDownloader:
                     # unsuccessful and start over
                     raise ApiResponseError() from exception
 
-            # Check for 'photos' in results to avoid KeyError
-            if "photos" not in results or "photo" not in results["photos"]:
-                break
-
             try:
-                num_photos = int(results["photos"]["total"])
-            except TypeError:
-                num_photos = 0
+                try:
+                    num_photos = int(results["photos"]["total"])
+                except TypeError:
+                    num_photos = 0
 
-            if num_photos > 3000 and self._timespan.duration > datetime.timedelta(
-                seconds=1
-            ):
-                raise DownloadBatchIsTooLargeError(
-                    (
-                        "More than 3000 rows returned ({:d}), "
-                        + "please specify a shorter time span."
-                    ).format(num_photos)
-                )
-
-            for photo in results["photos"]["photo"]:
-                # the flickr API is matching date_posted very fuzzily,
-                # let’s not waste time with duplicates
-                if (
-                    datetime.datetime.fromtimestamp(
-                        int(photo["dateupload"]), tz=datetime.timezone.utc
-                    )
-                    > self._timespan.end
+                if num_photos > 3000 and self._timespan.duration > datetime.timedelta(
+                    seconds=1
                 ):
-                    break
+                    raise DownloadBatchIsTooLargeError(
+                        (
+                            "More than 3000 rows returned ({:d}), "
+                            + "please specify a shorter time span."
+                        ).format(num_photos)
+                    )
 
-                yield photo
+                for photo in results["photos"]["photo"]:
+                    # the flickr API is matching date_posted very fuzzily,
+                    # let’s not waste time with duplicates
+                    if (
+                        datetime.datetime.fromtimestamp(
+                            int(photo["dateupload"]), tz=datetime.timezone.utc
+                        )
+                        > self._timespan.end
+                    ):
+                        break
+
+                    yield photo
+
+            except KeyError:
+                pass  # moving on to next page, if exists
 
             page += 1
             if page > int(results["photos"]["pages"]):
