@@ -31,7 +31,7 @@ class LicenseDownloader:
         query = {
             "method": "flickr.photos.licenses.getInfo",
             "format": "json",
-            "nojsoncallback": "?",
+            "nojsoncallback": "",
         }
 
         with self._api_key_manager.get_api_key() as api_key:
