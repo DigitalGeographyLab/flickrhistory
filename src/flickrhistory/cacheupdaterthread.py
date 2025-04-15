@@ -35,7 +35,10 @@ class CacheUpdaterThread(threading.Thread):
             try:
                 newly_downloaded = self._done_queue.get(timeout=0.1)
                 with Cache() as cache:
-                    cache["already downloaded"] += newly_downloaded
+                    try:
+                        cache["already downloaded"] += newly_downloaded
+                    except KeyError:
+                        cache["already downloaded"] = newly_downloaded
                     self.status = "added {}".format(newly_downloaded)
             except queue.Empty:
                 if self.shutdown.is_set():

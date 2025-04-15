@@ -52,7 +52,7 @@ class PhotoDownloaderThread(threading.Thread):
 
             try:
                 for photo in photo_downloader.photos:
-                    PhotoSaver().save(photo)
+                    photo = PhotoSaver().save(photo)
 
                     self.count += 1
 

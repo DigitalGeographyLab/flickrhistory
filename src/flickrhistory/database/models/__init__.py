@@ -24,7 +24,7 @@ from .tag import Tag
 from .user import User
 
 
-if sqlalchemy.inspect(engine).has_table(Photo.__table__):  # data exists
+if sqlalchemy.inspect(engine).has_table(Photo.__table__.name):  # data exists
     DatabaseSchemaUpdater().update_to_latest()
 else:
     Base.metadata.create_all(engine)

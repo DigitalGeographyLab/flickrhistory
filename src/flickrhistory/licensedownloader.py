@@ -26,11 +26,12 @@ class LicenseDownloader:
         """Update the list of licenses."""
         self._api_key_manager = api_key_manager
 
-    def update_license(self):
+    def update_licenses(self):
         """Update the list of licenses."""
         query = {
             "method": "flickr.photos.licenses.getInfo",
             "format": "json",
+            "nojsoncallback": "?",
         }
 
         with self._api_key_manager.get_api_key() as api_key:
@@ -49,7 +50,7 @@ class LicenseDownloader:
                 raise ApiResponseError() from exception
 
         with Session() as session, session.begin():
-            for license in results["licenses"]:
+            for license in results["licenses"]["license"]:
                 license_id = license["id"]
                 license_name = license["name"]
                 license_url = license["url"]

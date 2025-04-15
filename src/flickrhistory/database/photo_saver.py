@@ -18,7 +18,7 @@ __all__ = ["PhotoSaver"]
 class PhotoSaver:
     """Save a flickr photo to the database."""
 
-    def save(data):
+    def save(self, data):
         """Save a flickr photo to the database."""
         # the API does not always return all fields
         # we need to figure out which ones we can use
@@ -102,18 +102,25 @@ class PhotoSaver:
 
         with Session() as session, session.begin():
 
-            photo = Photo(**photo_data)
-
-            photo.tags = []
-            for tag in tags:
-                tag = session.get(Tag, tag) or Tag(tag=tag)
-                if tag not in photo.tags:
-                    photo.tags.append(tag)
-
-            photo.license = session.get(License, license) or License(name=license)
-
+            photo = session.get(Photo, photo_data["id"]) or Photo(id=photo_data["id"])
             user = UserSaver().save(data)
             photo.user = user
 
-            session.merge(photo)
-            return photo
+            photo = session.merge(photo)
+            photo.update(**photo_data)
+
+            photo.tags = []
+            for tag in tags:
+                tag = session.merge(
+                    session.get(Tag, tag) or Tag(tag=tag)
+                )
+                if tag not in photo.tags:
+                    photo.tags.append(tag)
+
+            license = session.merge(
+                session.get(License, license) or License(id=license)
+            )
+            session.flush()
+            photo.license = license
+
+        return photo

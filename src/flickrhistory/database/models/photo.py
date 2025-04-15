@@ -74,6 +74,6 @@ class Photo(Base):
         ),
     )
 
-    @sqlalchemy.orm.validates("title", "description", "tags")
+    @sqlalchemy.orm.validates("title", "description")
     def _drop_nul_from_strings(self, key, address):
         return address.replace("\x00", "")

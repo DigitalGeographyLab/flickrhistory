@@ -22,10 +22,10 @@ SCHEMA_UPDATES = {
     1: """
         ALTER TABLE
             photos
-        ADD COLUMN
+        ADD COLUMN IF NOT EXISTS
             geo_accuracy SMALLINT;
 
-        CREATE TABLE
+        CREATE TABLE IF NOT EXISTS
             licenses (
                 id INTEGER,
                 name TEXT,
@@ -34,7 +34,7 @@ SCHEMA_UPDATES = {
 
         ALTER TABLE
             photos
-        ADD COLUMN
+        ADD COLUMN IF NOT EXISTS
             license INTEGER REFERENCES licenses(id);
     """,
 }
@@ -50,14 +50,16 @@ class DatabaseSchemaUpdater:
         # Try to create database table for schema version
         with engine.begin() as connection:
             connection.execute(
-                """
-                    CREATE TABLE IF NOT EXISTS
-                        schema_versions
-                        (
-                            update TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-                            version INTEGER PRIMARY KEY
-                        );
-                """
+                sqlalchemy.text(
+                    """
+                        CREATE TABLE IF NOT EXISTS
+                            schema_versions
+                            (
+                                update TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                                version INTEGER PRIMARY KEY
+                            );
+                    """
+                )
             )
 
     @property

@@ -14,8 +14,6 @@ import re
 import sqlalchemy.ext.declarative
 import sqlalchemy.orm
 
-from ...config import Config
-
 
 CAMEL_CASE_TO_SNAKE_CASE_RE = re.compile(
     "((?<=[a-z0-9])[A-Z]|(?!^)(?<!_)[A-Z](?=[a-z]))"
@@ -41,23 +39,18 @@ class Base:
                 pass
         return "{}({})".format(self.__class__.__name__, json.dumps(primary_keys))
 
-    @staticmethod
-    def pseudonymise_identifiers():
-        """Pseudonymise identifiers?."""
-        pseudonymise_identifiers = True
-        try:
-            with Config() as config:
-                if config["pseudonymise"] is False:
-                    pseudonymise_identifiers = False
-        except KeyError:
-            pass
-        return pseudonymise_identifiers
-
     @sqlalchemy.orm.declared_attr
     def __tablename__(cls):
         """Return a table name derived from the class name."""
         snake_case = camel_case_to_snake_case(cls.__name__)
         return "{:s}s".format(snake_case)
+
+    def update(self, **kwargs):
+        """
+        Update the values of this ORM object from keyword arguments
+        """
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
 
 Base = sqlalchemy.ext.declarative.declarative_base(cls=Base)
