@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 
-"""Thread to complete missing data on user profiles."""
+"""Thread to complete missing data on photos."""
 
 
-__all__ = ["UserProfileUpdaterThread"]
+__all__ = ["PhotoUpdaterThread"]
 
 
 import threading
@@ -14,20 +14,20 @@ import time
 import sqlalchemy
 
 from .config import Config
-from .database import User, UserSaver
+from .database import Photo, PhotoSaver, Session
 from .exceptions import ApiResponseError
-from .userprofiledownloader import UserProfileDownloader
+from .photoupdater import PhotoUpdater
 
 
-class UserProfileUpdaterThread(threading.Thread):
-    """Finds incomplete user profiles and downloads missing data from the flickr API."""
+class PhotoUpdaterThread(threading.Thread):
+    """Finds incomplete photos and downloads missing data from the flickr API."""
     def __init__(self, api_key_manager, partition=None):
         """
-        Intialize a UserProfileUpdateThread.
+        Intialize a PhotoUpdaterThread.
 
         Args:
             api_key_manager: instance of an ApiKeyManager
-            partition (tuple of int): download the n-th of m parts of incomplete users
+            partition (tuple of int): download the n-th of m parts of incomplete photos
 
         """
         super().__init__()
@@ -54,49 +54,47 @@ class UserProfileUpdaterThread(threading.Thread):
             )
 
     @property
-    def nsids_of_users_without_detailed_information(self):
-        """Find nsid of incomplete user profiles."""
-        # Find nsid of incomplete user profiles
-        # We use join_date IS NULL, because after
-        # updating a profile it will be "", so NULL is
-        # a good way of finding “new” profiles
-        with sqlalchemy.orm.Session(self._engine) as session:
+    def ids_of_photos_without_detailed_information(self):
+        """Find ids of incomplete photo profiles."""
+        # Find id of incomplete photo records
+        # We use geo_accuracy IS NULL
+        with Session() as session:
             if self._bounds is None:
-                nsids_of_users_without_detailed_information = session.query(
-                    User.nsid
-                ).filter_by(join_date=None)
+                ids_of_photos_without_detailed_information = session.query(
+                    Photo.id
+                ).filter_by(geo_accuracy=None)
             else:
                 bounds = (
                     sqlalchemy.select(
                         sqlalchemy.sql.functions.percentile_disc(self._bounds[0])
-                        .within_group(User.id)
+                        .within_group(Photo.id)
                         .label("lower"),
                         sqlalchemy.sql.functions.percentile_disc(self._bounds[1])
-                        .within_group(User.id)
+                        .within_group(Photo.id)
                         .label("upper"),
                     )
-                    .select_from(User)
-                    .filter_by(join_date=None)
+                    .select_from(Photo)
+                    .filter_by(geo_accuracy=None)
                     .cte()
                 )
-                nsids_of_users_without_detailed_information = (
-                    session.query(User.nsid)
-                    .filter_by(join_date=None)
-                    .where(User.id.between(bounds.c.lower, bounds.c.upper))
+                ids_of_photos_without_detailed_information = (
+                    session.query(Photo.id)
+                    .filter_by(geo_accuracy=None)
+                    .where(Photo.id.between(bounds.c.lower, bounds.c.upper))
                     .yield_per(1000)
                 )
 
-            for (nsid,) in nsids_of_users_without_detailed_information:
-                yield nsid
+            for (id,) in ids_of_photos_without_detailed_information:
+                yield id
 
     def run(self):
         """Get TimeSpans off todo_queue and download photos."""
-        user_profile_downloader = UserProfileDownloader(self._api_key_manager)
+        photo_updater = PhotoUpdater(self._api_key_manager)
 
         while not self.shutdown.is_set():
-            for nsid in self.nsids_of_users_without_detailed_information:
+            for photo_id in self.ids_of_photos_without_detailed_information:
                 try:
-                    UserSaver().save(user_profile_downloader.get_profile_for_nsid(nsid))
+                    PhotoSaver().save(photo_updater.get_info_for_photo_id(photo_id))
                     self.count += 1
 
                 except ApiResponseError:
@@ -107,7 +105,7 @@ class UserProfileUpdaterThread(threading.Thread):
                 if self.shutdown.is_set():
                     break
 
-            # once no incomplete user profiles remain,
+            # once no incomplete photo profiles remain,
             # wait for ten minutes before trying again;
             # wake up every 1/10 sec to check whether we
             # should shut down

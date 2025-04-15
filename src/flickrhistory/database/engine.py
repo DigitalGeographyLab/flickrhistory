@@ -16,7 +16,7 @@ import sqlalchemy.orm
 from ..config import Config
 
 
-POOL_SIZE = multiprocessing.cpu_count()
+POOL_SIZE = multiprocessing.cpu_count() * 10
 
 
 with Config() as config:
