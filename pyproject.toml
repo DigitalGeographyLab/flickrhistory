@@ -16,7 +16,8 @@ dependencies = [
     "blessed",
     "GeoAlchemy2",
     "PyYaml",
-    "psycopg",
+    "psycopg2",
+    "requests",
     "SQLAlchemy",
     "urllib3",
 ]
