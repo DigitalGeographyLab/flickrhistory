@@ -46,9 +46,7 @@ class Base:
         return "{:s}s".format(snake_case)
 
     def update(self, **kwargs):
-        """
-        Update the values of this ORM object from keyword arguments
-        """
+        """Update the values of this ORM object from keyword arguments."""
         for key, value in kwargs.items():
             setattr(self, key, value)
 

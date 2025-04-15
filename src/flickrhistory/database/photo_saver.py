@@ -111,9 +111,7 @@ class PhotoSaver:
 
             photo.tags = []
             for tag in tags:
-                tag = session.merge(
-                    session.get(Tag, tag) or Tag(tag=tag)
-                )
+                tag = session.merge(session.get(Tag, tag) or Tag(tag=tag))
                 if tag not in photo.tags:
                     photo.tags.append(tag)
 
