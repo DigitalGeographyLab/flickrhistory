@@ -36,7 +36,7 @@ class CacheUpdaterThread(threading.Thread):
                 newly_downloaded = self._done_queue.get(timeout=0.1)
                 with Cache() as cache:
                     cache["already downloaded"] += newly_downloaded
-                    self.status = "added {}".format(newly_downloaded)
+                    self.status = f"added {newly_downloaded}"
             except queue.Empty:
                 if self.shutdown.is_set():
                     break

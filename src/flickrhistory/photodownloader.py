@@ -75,10 +75,8 @@ class PhotoDownloader:
                 seconds=1
             ):
                 raise DownloadBatchIsTooLargeError(
-                    (
-                        "More than 4000 rows returned ({:d}), "
-                        + "please specify a shorter time span."
-                    ).format(num_photos)
+                    f"More than 4000 rows returned ({num_photos}), "
+                    "please specify a shorter time span."
                 )
 
             for photo in results["photos"]["photo"]:
