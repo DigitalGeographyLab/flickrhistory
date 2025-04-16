@@ -7,6 +7,8 @@
 
 import datetime
 
+import sqlalchemy
+
 from .models import License, Photo, Tag
 from .session import Session
 from .user_saver import UserSaver
@@ -108,10 +110,12 @@ class PhotoSaver:
             photo.update(**photo_data)
 
             photo.tags = []
-            for tag in tags:
-                tag = session.merge(session.get(Tag, tag) or Tag(tag=tag))
-                if tag not in photo.tags:
-                    photo.tags.append(tag)
+            for tag in set(tags):
+                try:
+                    with session.begin_nested():
+                        photo.tags.append(session.merge(Tag(tag=tag)))
+                except sqlalchemy.exc.IntegrityError:
+                    photo.tags.append(session.get(Tag, tag))
 
             license = session.merge(
                 session.get(License, license) or License(id=license)
