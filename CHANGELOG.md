@@ -1,3 +1,6 @@
+- **0.3.1** (2025-04-16):
+    - fix race conditions around tags (duplicate keys)
+
 - **0.3.0** (2025-04-15):
     - now collecting more data: tags, license, geo-accuracy
     - re-downloading these data for existing records
