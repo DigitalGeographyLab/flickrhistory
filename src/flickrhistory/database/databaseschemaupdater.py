@@ -20,22 +20,55 @@ from ..config import Config
 SCHEMA_UPDATES = {
     # 0 -> 1
     1: """
-        ALTER TABLE
-            photos
-        ADD COLUMN IF NOT EXISTS
-            geo_accuracy SMALLINT;
+        CREATE TABLE licenses (
+            id integer NOT NULL,
+            name text,
+            url text
+        );
 
-        CREATE TABLE IF NOT EXISTS
-            licenses (
-                id INTEGER,
-                name TEXT,
-                url TEXT
-            );
+        CREATE SEQUENCE licenses_id_seq
+            AS integer
+            START WITH 1
+            INCREMENT BY 1
+            NO MINVALUE
+            NO MAXVALUE
+            CACHE 1;
 
-        ALTER TABLE
-            photos
-        ADD COLUMN IF NOT EXISTS
-            license INTEGER REFERENCES licenses(id);
+        ALTER SEQUENCE licenses_id_seq OWNED BY licenses.id;
+
+        ALTER TABLE ONLY photos ADD COLUMN geo_accuracy SMALLINT, ADD COLUMN license_id INTEGER;
+
+        CREATE TABLE tag_photo_associations (
+            tag_tag text NOT NULL,
+            photo_id bigint NOT NULL
+        );
+
+        CREATE TABLE tags (
+            tag text NOT NULL
+        );
+
+        ALTER TABLE ONLY licenses ALTER COLUMN id SET DEFAULT nextval('licenses_id_seq'::regclass);
+
+        ALTER TABLE ONLY licenses
+            ADD CONSTRAINT licenses_pkey PRIMARY KEY (id);
+
+        ALTER TABLE ONLY tag_photo_associations
+            ADD CONSTRAINT tag_photo_associations_pkey PRIMARY KEY (tag_tag, photo_id);
+
+        ALTER TABLE ONLY tags
+            ADD CONSTRAINT tags_pkey PRIMARY KEY (tag);
+
+        CREATE INDEX ix_photos_license_id ON photos USING btree (license_id);
+
+        ALTER TABLE ONLY photos RENAME CONSTRAINT "FlickrUser" TO "User";
+
+        ALTER TABLE ONLY photos ADD CONSTRAINT photos_license_id_fkey FOREIGN KEY (license_id) REFERENCES licenses(id);
+
+        ALTER TABLE ONLY tag_photo_associations
+            ADD CONSTRAINT tag_photo_associations_photo_id_fkey FOREIGN KEY (photo_id) REFERENCES photos(id);
+
+        ALTER TABLE ONLY tag_photo_associations
+            ADD CONSTRAINT tag_photo_associations_tag_tag_fkey FOREIGN KEY (tag_tag) REFERENCES tags(tag);
     """,
 }
 
@@ -94,9 +127,10 @@ class DatabaseSchemaUpdater:
                 file=sys.stderr,
                 flush=True,  # so that we don’t seem without work
             )
-            with self.engine.connect() as connection:
+            with self.engine.begin() as connection:
                 next_version = self.installed_version + 1
                 connection.execute(sqlalchemy.text(SCHEMA_UPDATES[next_version]))
+                connection.commit()
                 self.set_schema_version(next_version)
             installed_version = self.installed_version
 
