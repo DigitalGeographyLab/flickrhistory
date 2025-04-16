@@ -57,7 +57,6 @@ class BasicFlickrHistoryDownloader:
 
     def download(self):
         """Download all georeferenced flickr posts."""
-
         # create a session to initialise the database
         _ = Session()
 
