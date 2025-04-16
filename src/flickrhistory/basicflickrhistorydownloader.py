@@ -21,6 +21,7 @@ from .apikeymanager import ApiKeyManager
 from .cache import Cache
 from .cacheupdaterthread import CacheUpdaterThread
 from .config import Config
+from .database import Session
 from .licensedownloader import LicenseDownloader
 from .photodownloaderthread import PhotoDownloaderThread
 from .photoupdaterthread import PhotoUpdaterThread
@@ -56,6 +57,10 @@ class BasicFlickrHistoryDownloader:
 
     def download(self):
         """Download all georeferenced flickr posts."""
+        # create a session to initialise the database
+        _ = Session()
+
+        # download an updated list of possible licenses
         LicenseDownloader(self._api_key_manager).update_licenses()
 
         for gap in self.gaps_in_download_history:
